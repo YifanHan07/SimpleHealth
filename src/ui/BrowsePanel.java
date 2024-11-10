@@ -8,10 +8,14 @@ import java.util.List;
 import api.EdamamAPI;
 
 public class BrowsePanel extends JPanel {
-    private JTextField searchField;      // Text field for entering search keywords
-    private JComboBox<String> tagFilter; // Dropdown for dietary tags filter
-    private JButton searchButton;        // Button to execute the search
-    private JList<String> resultList;    // List to display recipe titles
+    private JTextField searchField;
+    // Text field for entering search keywords
+    private JComboBox<String> tagFilter;
+    // Dropdown for dietary tags filter
+    private JButton searchButton;
+    // Button to execute the search
+    private JList<String> resultList;
+    // List to display recipe titles
 
     public BrowsePanel() {
         setLayout(new BorderLayout());
@@ -52,11 +56,13 @@ public class BrowsePanel extends JPanel {
         String selectedTag = (String) tagFilter.getSelectedItem();
 
         try {
-            List<Recipe> recipes = EdamamAPI.searchRecipes(keyword, 10); // Use api.EdamamAPI to search
+            List<Recipe> recipes = EdamamAPI.searchRecipes(keyword, 10);
+            // Use api.EdamamAPI to search
             DefaultListModel<String> listModel = new DefaultListModel<>();
 
             for (Recipe recipe : recipes) {
-                listModel.addElement(recipe.getTitle()); // Display recipe titles
+                listModel.addElement(recipe.getTitle());
+                // Display recipe titles
             }
             resultList.setModel(listModel);
         } catch (Exception ex) {
