@@ -56,12 +56,12 @@ public class BrowsePanel extends JPanel {
         String selectedTag = (String) tagFilter.getSelectedItem();
 
         try {
-            List<Recipe> recipes = EdamamAPI.searchRecipes(keyword, 10);
+            List<List<String>> recipes = EdamamAPI.searchRecipes(keyword, 10);
             // Use api.EdamamAPI to search
             DefaultListModel<String> listModel = new DefaultListModel<>();
 
-            for (Recipe recipe : recipes) {
-                listModel.addElement(recipe.getTitle());
+            for (List<String> recipe : recipes) {
+                listModel.addElement(recipe.get(0));
                 // Display recipe titles
             }
             resultList.setModel(listModel);
