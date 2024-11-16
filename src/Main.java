@@ -1,4 +1,4 @@
-import ui.BrowsePanel;
+import view.BrowsePanel;
 
 import javax.swing.*;
 
