@@ -57,13 +57,28 @@ public class EdamamAPI {
                 eachRecipe.add("Recipe " + (i + 1) + ": " + recipe.getString("label"));
                 eachRecipe.add("URL: " + recipe.getString("url"));
                 eachRecipe.add("Calories: " + recipe.getDouble("calories"));
-                eachRecipe.add("Ingredients: " + recipe.getJSONArray("ingredientLines"));
+
+                JSONArray ingredients = jsonResponse.getJSONArray("ingredients");
+                StringBuilder ingredient = new StringBuilder();
+                for (int j = 0; j < ingredients.length(); j++) {
+                    ingredient.append(ingredients.getJSONObject(j));
+                }
+                eachRecipe.add("Ingredients: " + ingredient);
+
+                JSONArray instructions = jsonResponse.getJSONArray("instructions");
+                StringBuilder instruction = new StringBuilder();
+                for (int j = 0; j < instructions.length(); j++) {
+                    instruction.append(j + 1).append(":").append(instructions.getJSONObject(j));
+                }
+                eachRecipe.add("Instructions: " + instruction);
+
+                JSONArray tags = jsonResponse.getJSONArray("tags");
+                StringBuilder tag = new StringBuilder();
+                for (int j = 0; j < tags.length(); j++) {
+                    tag.append(tags.getJSONObject(j));
+                }
+                eachRecipe.add("Tags: " + tag);
                 recipeList.add(eachRecipe);
-                /*System.out.println("Recipe " + (i + 1) + ": " + recipe.getString("label"));
-                System.out.println("URL: " + recipe.getString("url"));
-                System.out.println("Calories: " + recipe.getDouble("calories"));
-                System.out.println("Ingredients: " + recipe.getJSONArray("ingredientLines"));
-                System.out.println();*/
             }
             return recipeList;
         } else {
