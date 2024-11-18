@@ -5,55 +5,60 @@ import javax.swing.*;
 import java.awt.*;
 
 public class MyAccountPanel extends JPanel {
-    private final transient MyAccountController controller;
+    private final JTextField nameField;
+    private final JTextField preferencesField;
+    private final JTextField allergiesField;
 
     public MyAccountPanel(MyAccountController controller) {
-        this.controller = controller;
+        setLayout(new GridBagLayout());
+        setBorder(BorderFactory.createEmptyBorder(20, 20, 20, 20));
 
-        // Set layout and border
-        setLayout(new GridBagLayout()); // Centers components within the panel
-        setBorder(BorderFactory.createEmptyBorder(20, 20, 20, 20)); // Padding around the panel
+        GridBagConstraints gbc = new GridBagConstraints();
+        gbc.insets = new Insets(10, 10, 10, 10);
+        gbc.fill = GridBagConstraints.HORIZONTAL;
 
-        // Create a panel for components
-        JPanel contentPanel = new JPanel();
-        contentPanel.setLayout(new BoxLayout(contentPanel, BoxLayout.Y_AXIS)); // Vertical layout
-        contentPanel.setBorder(BorderFactory.createEmptyBorder(20, 20, 20, 20)); // Padding inside the box
+        // Name Section
+        JLabel nameLabel = new JLabel("Name:");
+        gbc.gridx = 0;
+        gbc.gridy = 0;
+        add(nameLabel, gbc);
+
+        nameField = new JTextField(controller.getName(), 20);
+        gbc.gridx = 1;
+        add(nameField, gbc);
 
         // Preferences Section
-        JPanel preferencesPanel = new JPanel(new FlowLayout(FlowLayout.LEFT));
         JLabel preferencesLabel = new JLabel("Preferences:");
-        JTextField preferencesField = new JTextField(controller.getPreferences(), 20); // Use the controller
-        preferencesPanel.add(preferencesLabel);
-        preferencesPanel.add(preferencesField);
+        gbc.gridx = 0;
+        gbc.gridy = 1;
+        add(preferencesLabel, gbc);
+
+        preferencesField = new JTextField(controller.getPreferences(), 20);
+        gbc.gridx = 1;
+        add(preferencesField, gbc);
 
         // Allergies Section
-        JPanel allergiesPanel = new JPanel(new FlowLayout(FlowLayout.LEFT));
         JLabel allergiesLabel = new JLabel("Allergies:");
-        JTextField allergiesField = new JTextField(controller.getAllergies(), 20); // Use the controller
-        allergiesPanel.add(allergiesLabel);
-        allergiesPanel.add(allergiesField);
+        gbc.gridx = 0;
+        gbc.gridy = 2;
+        add(allergiesLabel, gbc);
 
-        // Save Button Section
-        JPanel buttonPanel = new JPanel(new FlowLayout(FlowLayout.CENTER));
+        allergiesField = new JTextField(controller.getAllergies(), 20);
+        gbc.gridx = 1;
+        add(allergiesField, gbc);
+
+        // Save Button
         JButton saveButton = new JButton("Save");
         saveButton.addActionListener(e -> {
-            // Update preferences and allergies using the controller
+            controller.updateName(nameField.getText());
             controller.updatePreferences(preferencesField.getText());
             controller.updateAllergies(allergiesField.getText());
-
-            // Show confirmation message
             JOptionPane.showMessageDialog(this, "Details Saved Successfully!");
         });
-        buttonPanel.add(saveButton);
 
-        // Add components to content panel
-        contentPanel.add(preferencesPanel);
-        contentPanel.add(Box.createVerticalStrut(10)); // Spacer
-        contentPanel.add(allergiesPanel);
-        contentPanel.add(Box.createVerticalStrut(20)); // Spacer
-        contentPanel.add(buttonPanel);
-
-        // Add content panel to the center of the main panel
-        add(contentPanel, new GridBagConstraints());
+        gbc.gridx = 0;
+        gbc.gridy = 3;
+        gbc.gridwidth = 2;
+        add(saveButton, gbc);
     }
 }

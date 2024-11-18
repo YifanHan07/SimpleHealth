@@ -1,6 +1,6 @@
 package use_case;
 
-import entities.UserAccount;
+import entites.UserAccount;
 
 public class MyAccountUseCase {
     private final UserAccount userAccount;
@@ -9,33 +9,27 @@ public class MyAccountUseCase {
         this.userAccount = userAccount;
     }
 
-    // Getter for Username
-    public String getUsername() {
+    public String getName() {
         return userAccount.getUsername();
     }
 
-    // Setter for Username
-    public void setUsername(String username) {
-        userAccount.setUsername(username);
+    public void updateName(String name) {
+        userAccount.setUsername(name);
     }
 
-    // Getter for Preferences
     public String getPreferences() {
         return userAccount.getPreferences();
     }
 
-    // Setter for Preferences
-    public void setPreferences(String preferences) {
+    public void updatePreferences(String preferences) {
         userAccount.setPreferences(preferences);
     }
 
-    // Getter for Allergies
     public String getAllergies() {
         return userAccount.getAllergies();
     }
 
-    // Setter for Allergies
-    public void setAllergies(String allergies) {
+    public void updateAllergies(String allergies) {
         userAccount.setAllergies(allergies);
     }
 }

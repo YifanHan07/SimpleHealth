@@ -1,37 +1,35 @@
+package data_access;
+
+import use_case.MyAccountUseCase;
+
 public class MyAccountController {
-    private final MyAccountUseCase userAccount;
+    private final MyAccountUseCase useCase;
 
-    public MyAccountController(MyAccountUseCase userAccount) {
-        this.userAccount = userAccount;
+    public MyAccountController(MyAccountUseCase useCase) {
+        this.useCase = useCase;
     }
 
-    // Getter for Name
     public String getName() {
-        return userAccount.getUsername(); // Delegates to UserAccount through MyAccountUseCase
+        return useCase.getName();
     }
 
-    // Setter for Name
     public void updateName(String name) {
-        userAccount.setUsername(name);
+        useCase.updateName(name);
     }
 
-    // Getter for Preferences
     public String getPreferences() {
-        return userAccount.getPreferences();
+        return useCase.getPreferences();
     }
 
-    // Setter for Preferences
     public void updatePreferences(String preferences) {
-        userAccount.setPreferences(preferences);
+        useCase.updatePreferences(preferences);
     }
 
-    // Getter for Allergies
     public String getAllergies() {
-        return userAccount.getAllergies();
+        return useCase.getAllergies();
     }
 
-    // Setter for Allergies
     public void updateAllergies(String allergies) {
-        userAccount.setAllergies(allergies);
+        useCase.updateAllergies(allergies);
     }
 }
