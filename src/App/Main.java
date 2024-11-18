@@ -1,3 +1,5 @@
+package App;
+
 import view.BrowsePanel;
 
 import javax.swing.*;

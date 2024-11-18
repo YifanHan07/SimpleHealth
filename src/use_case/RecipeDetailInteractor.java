@@ -9,13 +9,20 @@ import java.util.List;
 
 public class RecipeDetailInteractor {
 
-    public List<RecipeDetail> execute(List<String> recipeDetails) {
-//        List<String> ingredientsList  = new ArrayList<>();
-//        List<String> instructionsList  = new ArrayList<>();
-//        List<String> tagList  = new ArrayList<>();
+    public static RecipeDetail execute(String keyword, String title) throws Exception {
 
+        List<List<String>> recipes = EdamamAPI.searchRecipes(keyword, 10);
+        List<String> recipeDetails = new ArrayList<>();
 
-        return (List<RecipeDetail>) new RecipeDetail(recipeDetails.get(0), recipeDetails.get(3), recipeDetails.get(4)
-                , recipeDetails.get(5));
+        for (List<String> recipe : recipes) {
+            if (recipe.get(0).equals(title)) {
+                recipeDetails.add(recipe.get(0));
+                recipeDetails.add(recipe.get(3));
+//                recipeDetails.add(recipe.get(4));
+//                recipeDetails.add(recipe.get(5));
+            }
+        }
+
+        return new RecipeDetail(title, recipeDetails.get(1));
     }
 }

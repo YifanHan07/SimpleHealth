@@ -5,7 +5,12 @@ import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.util.List;
+
+import Interface_adapter.RecipeDetailController;
+import Interface_adapter.RecipeDetailPresenter;
 import data_access.EdamamAPI;
+import entites.RecipeDetail;
+import use_case.RecipeDetailInteractor;
 
 public class BrowsePanel extends JPanel {
     private JTextField searchField;
@@ -60,7 +65,6 @@ public class BrowsePanel extends JPanel {
             // Clear previous results
             resultPanel.removeAll();
 
-            // Fetch recipes from the API
             List<List<String>> recipes = EdamamAPI.searchRecipes(keyword, 10);
 
             // For each recipe, create a panel with title, Save, and View Detail buttons
@@ -82,6 +86,7 @@ public class BrowsePanel extends JPanel {
     private JPanel createRecipeItem(String recipeTitle) {
         JPanel recipeItemPanel = new JPanel(new BorderLayout());
         JLabel titleLabel = new JLabel(recipeTitle);
+        String keyword = searchField.getText();
 
         // Buttons for each recipe item
         JButton saveButton = new JButton("Save");
@@ -98,7 +103,11 @@ public class BrowsePanel extends JPanel {
         viewDetailButton.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
-                viewRecipeDetail(recipeTitle);
+                try {
+                    viewRecipeDetail(keyword, recipeTitle);
+                } catch (Exception ex) {
+                    throw new RuntimeException(ex);
+                }
             }
         });
 
@@ -121,8 +130,19 @@ public class BrowsePanel extends JPanel {
     }
 
     // Method to view recipe details (placeholder implementation)
-    private void viewRecipeDetail(String recipeTitle) {
-        // Placeholder for viewing recipe details
-        JOptionPane.showMessageDialog(this, "Viewing details for: " + recipeTitle);
+    private void viewRecipeDetail(String keyword, String recipeTitle) throws Exception {
+        RecipeDetailInteractor recipeDetailInteractor = new RecipeDetailInteractor();
+        RecipeDetailController controller = new RecipeDetailController(recipeDetailInteractor);
+
+        RecipeDetailView view = new RecipeDetailView(controller);
+
+        RecipeDetail recipeDetail = recipeDetailInteractor.execute(keyword, recipeTitle);
+        view.showRecipeDetail(recipeDetail); // Pass the detail to the view
+
+        JFrame frame = new JFrame("Recipe Detail - " + recipeTitle);
+        frame.setSize(800, 600);
+        frame.setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE); // Close only this frame when done
+        frame.add(view); // Add the RecipeDetailView to the frame
+        frame.setVisible(true);
     }
 }
