@@ -129,10 +129,15 @@ public class BrowsePanel extends JPanel {
                     // Remove "Recipe X: " prefix from the title
                     String title = recipeTitle.substring(recipeTitle.indexOf(":") + 1).trim();
 
-                    // Create a panel to display the details
+                    // Create a custom dialog
+                    JDialog dialog = new JDialog((JFrame) SwingUtilities.getWindowAncestor(this), "Recipe Details", true);
+                    dialog.setDefaultCloseOperation(JDialog.DISPOSE_ON_CLOSE);
+                    dialog.setSize(500, 400);
+                    dialog.setLayout(new BorderLayout());
+
+                    // Panel for content
                     JPanel detailsPanel = new JPanel();
                     detailsPanel.setLayout(new BoxLayout(detailsPanel, BoxLayout.Y_AXIS));
-                    detailsPanel.setPreferredSize(new Dimension(400, 0)); // Set fixed width
                     detailsPanel.setBorder(BorderFactory.createEmptyBorder(10, 10, 10, 10)); // Add padding
 
                     // Add the bolded title
@@ -144,7 +149,7 @@ public class BrowsePanel extends JPanel {
 
                     // Add the URL as a clickable, wrapping link
                     String url = recipe.get(1).replace("URL: ", "");
-                    String formattedUrl = url.replaceAll("(.{50})", "$1<br>").trim(); // Trim leading/trailing whitespace or breaks
+                    String formattedUrl = url.replaceAll("(.{50})", "$1<br>").trim();
                     JLabel urlLabel = new JLabel("<html><a href='" + url + "'>" + formattedUrl + "</a></html>");
                     urlLabel.setCursor(Cursor.getPredefinedCursor(Cursor.HAND_CURSOR));
                     urlLabel.addMouseListener(new java.awt.event.MouseAdapter() {
@@ -182,15 +187,35 @@ public class BrowsePanel extends JPanel {
                     JLabel ingredientsLabel = new JLabel(bulletList.toString());
                     detailsPanel.add(ingredientsLabel);
 
-                    // Wrap the panel in a JScrollPane to allow vertical scrolling if needed
-                    JScrollPane scrollPane = new JScrollPane(detailsPanel);
-                    scrollPane.setPreferredSize(new Dimension(400, 300)); // Fixed width, height adjusts
-                    scrollPane.setHorizontalScrollBarPolicy(JScrollPane.HORIZONTAL_SCROLLBAR_NEVER);
-                    scrollPane.setVerticalScrollBarPolicy(JScrollPane.VERTICAL_SCROLLBAR_AS_NEEDED);
-                    scrollPane.setBorder(BorderFactory.createEmptyBorder()); // Remove scroll pane border
+                    // Add buttons at the bottom
+                    JPanel buttonPanel = new JPanel(new FlowLayout(FlowLayout.RIGHT));
 
-                    // Show the scrollable details panel in a JOptionPane
-                    JOptionPane.showMessageDialog(this, scrollPane, "Recipe Details", JOptionPane.INFORMATION_MESSAGE);
+                    // OK Button
+                    JButton okButton = new JButton("OK");
+                    okButton.addActionListener(e -> dialog.dispose());
+
+                    // View Nutrition Facts Button
+                    JButton viewNutritionButton = new JButton("View Nutrition Facts");
+                    viewNutritionButton.addActionListener(e -> {
+                        // Replace content with detailed nutrition facts
+                        detailsPanel.removeAll();
+
+                        // Simulated detailed nutrition facts
+                        JLabel nutritionFactsLabel = new JLabel("<html><b>Nutrition Facts:</b><br>Calories: " + roundedCalories +
+                                "<br>Protein: 12g<br>Carbs: 45g<br>Fat: 10g<br>Fiber: 5g<br>Sodium: 200mg</html>");
+                        detailsPanel.add(nutritionFactsLabel);
+                        detailsPanel.revalidate();
+                        detailsPanel.repaint();
+                    });
+
+                    buttonPanel.add(viewNutritionButton);
+                    buttonPanel.add(okButton);
+
+                    dialog.add(new JScrollPane(detailsPanel), BorderLayout.CENTER);
+                    dialog.add(buttonPanel, BorderLayout.SOUTH);
+
+                    dialog.setLocationRelativeTo(this);
+                    dialog.setVisible(true);
                     return;
                 }
             }
