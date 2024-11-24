@@ -1,6 +1,5 @@
 package use_case;
 import data_access.EdamamAPI;
-import entites.NutritionInfo;
 import entites.RecipeDetail;
 
 import java.util.ArrayList;
