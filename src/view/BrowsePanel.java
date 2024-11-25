@@ -28,7 +28,12 @@ public class BrowsePanel extends JPanel {
         topPanel.setLayout(new FlowLayout());
 
         searchField = new JTextField(20);
-        tagFilter = new JComboBox<>(new String[]{"All", "Vegan", "Gluten-Free", "Low-Calorie", "High-Protein"});
+        tagFilter = new JComboBox<>(new String[]{"All", "alcohol-cocktail", "alcohol-free", "celery-free",
+                "crustacean-free", "dairy-free","egg-free", "fish-free", "fodmap-free", "gluten-free",
+                "immuno-supportive", "keto-friendly", "kidney-friendly", "kosher", "low-fat-abs", "low-potassium",
+                "low-sugar", "lupine-free", "Mediterranean", "mollusk-free", "mustard-free", "no-oil-added", "paleo",
+                "peanut-free", "pescatarian", "pork-free", "red-meat-free", "sesame-free", "shellfish-free", "soy-free",
+                "sugar-conscious", "sulfite-free", "tree-nut-free", "vegan", "vegetarian", "wheat-free"});
         searchButton = new JButton("Search");
 
         topPanel.add(new JLabel("Keyword:"));
@@ -57,14 +62,17 @@ public class BrowsePanel extends JPanel {
     // Method to perform search and update result list
     private void performSearch() {
         String keyword = searchField.getText();
-        String selectedTag = (String) tagFilter.getSelectedItem();
+        String tag = tagFilter.getSelectedItem().toString();
+        if (tag == "All") {
+            tag = "DASH";
+        }
 
         try {
             // Clear previous results
             resultPanel.removeAll();
 
             // Fetch recipes from the API
-            recipes = EdamamAPI.searchRecipes(keyword, 10);
+            recipes = EdamamAPI.searchRecipes(keyword, 10, tag);
 
             // For each recipe, create a panel with title, Save, and View Detail buttons
             for (List<String> recipe : recipes) {
