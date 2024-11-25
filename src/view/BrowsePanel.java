@@ -11,6 +11,7 @@ import entites.Recipe;
 public class BrowsePanel extends JPanel {
     private JTextField searchField;
     private JComboBox<String> tagFilter;
+    private JComboBox<Integer> resultsFilter; // Dropdown for max results
     private JButton searchButton;
     private JPanel resultPanel;
 
@@ -19,23 +20,32 @@ public class BrowsePanel extends JPanel {
     public BrowsePanel() {
         setLayout(new BorderLayout());
 
-        // Top panel for search input and filter
+        // Top panel for search input and filters
         JPanel topPanel = new JPanel();
         topPanel.setLayout(new FlowLayout());
 
         searchField = new JTextField(20);
+
         tagFilter = new JComboBox<>(new String[]{"All", "alcohol-cocktail", "alcohol-free", "celery-free",
                 "crustacean-free", "dairy-free","egg-free", "fish-free", "fodmap-free", "gluten-free",
                 "immuno-supportive", "keto-friendly", "kidney-friendly", "kosher", "low-fat-abs", "low-potassium",
                 "low-sugar", "lupine-free", "Mediterranean", "mollusk-free", "mustard-free", "no-oil-added", "paleo",
                 "peanut-free", "pescatarian", "pork-free", "red-meat-free", "sesame-free", "shellfish-free", "soy-free",
                 "sugar-conscious", "sulfite-free", "tree-nut-free", "vegan", "vegetarian", "wheat-free"});
+
+        // Updated dropdown for selecting the number of results
+        resultsFilter = new JComboBox<>(new Integer[]{5, 10, 20});
+        resultsFilter.setSelectedItem(10); // Default value
+
         searchButton = new JButton("Search");
 
+        // Add components to the top panel
         topPanel.add(new JLabel("Keyword:"));
         topPanel.add(searchField);
         topPanel.add(new JLabel("Tag:"));
         topPanel.add(tagFilter);
+        topPanel.add(new JLabel("Results:")); // Label for the new dropdown
+        topPanel.add(resultsFilter);
         topPanel.add(searchButton);
 
         // Result panel to show recipes
@@ -58,16 +68,21 @@ public class BrowsePanel extends JPanel {
             tag = "DASH";
         }
 
+        int maxResults = (int) resultsFilter.getSelectedItem(); // Get the selected maxResults value
+
+        System.out.println("maxResults: " + maxResults);
+
         try {
             // Clear previous results
             resultPanel.removeAll();
 
-            // Fetch recipes from the API
-            recipes = EdamamAPI.searchRecipes(keyword, 10, tag);
+            // Fetch recipes from the API (up to 25 due to API limitations)
+            recipes = EdamamAPI.searchRecipes(keyword, 25, tag);
 
-            // For each recipe, create a panel with title, Save, and View Detail buttons
-            for (Recipe recipe : recipes) {
-                String recipeTitle = recipe.getLabel();
+            // Display only the number of recipes selected by the user
+            int recipesToDisplay = Math.min(maxResults, recipes.size());
+            for (int i = 0; i < recipesToDisplay; i++) {
+                Recipe recipe = recipes.get(i);
                 resultPanel.add(createRecipeItem(recipe));
             }
 
