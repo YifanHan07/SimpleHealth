@@ -2,11 +2,13 @@ package data_access;
 
 import java.io.BufferedReader;
 import java.io.InputStreamReader;
+import java.io.OutputStream;
 import java.net.HttpURLConnection;
 import java.net.URL;
 import java.util.List;
 import java.util.ArrayList;
 
+import entites.Recipe;
 import org.json.JSONArray;
 import org.json.JSONObject;
 
@@ -22,12 +24,13 @@ public class EdamamAPI {
         try {
             // Test searchRecipes functionality
             System.out.println("Testing Recipe Search:");
-            List<List<String>> recipes = searchRecipes("Pasta", 15, "DASH");
+            List<Recipe> recipes = searchRecipes("Pasta", 15, "DASH");
             if (recipes != null) {
-                for (List<String> recipe : recipes) {
-                    for (String detail : recipe) {
-                        System.out.println(detail);
-                    }
+                for (Recipe recipe : recipes) {
+                    System.out.println("Label: " + recipe.getLabel());
+                    System.out.println("URL: " + recipe.getUrl());
+                    System.out.println("Calories: " + recipe.getCalories());
+                    System.out.println("Ingredients: " + recipe.getIngredientLines());
                     System.out.println();
                 }
             }
@@ -53,7 +56,7 @@ public class EdamamAPI {
         }
     }
 
-    public static List<List<String>> searchRecipes(String query, int maxResults, String tag) throws Exception {
+    public static List<Recipe> searchRecipes(String query, int maxResults, String tag) throws Exception {
         String apiUrl = String.format(
                 "https://api.edamam.com/api/recipes/v2?type=public&q=%s&app_id=%s&app_key=%s&from=0&to=%d&health=%s",
                 java.net.URLEncoder.encode(query, "UTF-8"), APP_ID, APP_KEY, maxResults, tag
@@ -78,17 +81,25 @@ public class EdamamAPI {
             // Parse the JSON response
             JSONObject jsonResponse = new JSONObject(response.toString());
             JSONArray hits = jsonResponse.getJSONArray("hits");
-            List<List<String>> recipeList = new ArrayList<>();
+            List<Recipe> recipeList = new ArrayList<>();
 
             // Extract each recipe
             for (int i = 0; i < hits.length(); i++) {
-                JSONObject recipe = hits.getJSONObject(i).getJSONObject("recipe");
-                List<String> eachRecipe = new ArrayList<>();
-                eachRecipe.add("Recipe " + (i + 1) + ": " + recipe.getString("label"));
-                eachRecipe.add("URL: " + recipe.getString("url"));
-                eachRecipe.add("Calories: " + recipe.getDouble("calories"));
-                eachRecipe.add("Ingredients: " + recipe.getJSONArray("ingredientLines"));
-                recipeList.add(eachRecipe);
+                JSONObject recipeJson = hits.getJSONObject(i).getJSONObject("recipe");
+                String label = recipeJson.getString("label");
+                String urlStr = recipeJson.getString("url");
+                double calories = recipeJson.getDouble("calories");
+                JSONArray ingredientsArray = recipeJson.getJSONArray("ingredientLines");
+
+                // Convert JSONArray to List<String>
+                List<String> ingredientLines = new ArrayList<>();
+                for (int j = 0; j < ingredientsArray.length(); j++) {
+                    ingredientLines.add(ingredientsArray.getString(j));
+                }
+
+                // Create Recipe object and add to the list
+                Recipe recipe = new Recipe(label, urlStr, calories, ingredientLines);
+                recipeList.add(recipe);
             }
             return recipeList;
         } else {
@@ -116,13 +127,21 @@ public class EdamamAPI {
         payload.put("title", "Nutrition Analysis");
         payload.put("ingr", ingredients);
 
+        // Debug: Print the payload
+        System.out.println("Payload being sent: " + payload.toString());
+
         // Send POST request
         URL url = new URL(apiUrl);
         HttpURLConnection conn = (HttpURLConnection) url.openConnection();
         conn.setRequestMethod("POST");
         conn.setRequestProperty("Content-Type", "application/json");
+        conn.setRequestProperty("Accept", "application/json");
         conn.setDoOutput(true);
-        conn.getOutputStream().write(payload.toString().getBytes("UTF-8"));
+
+        OutputStream os = conn.getOutputStream();
+        os.write(payload.toString().getBytes("UTF-8"));
+        os.flush();
+        os.close();
 
         int responseCode = conn.getResponseCode();
 
@@ -165,5 +184,5 @@ public class EdamamAPI {
         }
     }
 
-    //public static List<String> getAllergies(List<String> ingredients) throws Exception {}
+    // public static List<String> getAllergies(List<String> ingredients) throws Exception {}
 }

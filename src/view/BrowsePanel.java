@@ -5,20 +5,16 @@ import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.util.List;
-import java.util.ArrayList;
 import data_access.EdamamAPI;
+import entites.Recipe;
 
 public class BrowsePanel extends JPanel {
     private JTextField searchField;
-    // Text field for entering search keywords
     private JComboBox<String> tagFilter;
-    // Dropdown for dietary tags filter
     private JButton searchButton;
-    // Button to execute the search
     private JPanel resultPanel;
-    // Panel to display each recipe item with Save and View Detail buttons
 
-    private List<List<String>> recipes;
+    private List<Recipe> recipes;
 
     public BrowsePanel() {
         setLayout(new BorderLayout());
@@ -51,19 +47,14 @@ public class BrowsePanel extends JPanel {
         add(scrollPane, BorderLayout.CENTER);
 
         // Action listener for the search button
-        searchButton.addActionListener(new ActionListener() {
-            @Override
-            public void actionPerformed(ActionEvent e) {
-                performSearch();
-            }
-        });
+        searchButton.addActionListener(e -> performSearch());
     }
 
     // Method to perform search and update result list
     private void performSearch() {
         String keyword = searchField.getText();
         String tag = tagFilter.getSelectedItem().toString();
-        if (tag == "All") {
+        if (tag.equals("All")) {
             tag = "DASH";
         }
 
@@ -75,9 +66,9 @@ public class BrowsePanel extends JPanel {
             recipes = EdamamAPI.searchRecipes(keyword, 10, tag);
 
             // For each recipe, create a panel with title, Save, and View Detail buttons
-            for (List<String> recipe : recipes) {
-                String recipeTitle = recipe.get(0);
-                resultPanel.add(createRecipeItem(recipeTitle));
+            for (Recipe recipe : recipes) {
+                String recipeTitle = recipe.getLabel();
+                resultPanel.add(createRecipeItem(recipe));
             }
 
             // Refresh the result panel to show new content
@@ -90,28 +81,18 @@ public class BrowsePanel extends JPanel {
     }
 
     // Helper method to create a panel for each recipe item with Save and View Detail buttons
-    private JPanel createRecipeItem(String recipeTitle) {
+    private JPanel createRecipeItem(Recipe recipe) {
         JPanel recipeItemPanel = new JPanel(new BorderLayout());
-        JLabel titleLabel = new JLabel(recipeTitle);
+        JLabel titleLabel = new JLabel(recipe.getLabel());
 
         // Buttons for each recipe item
         JButton saveButton = new JButton("Save");
         JButton viewDetailButton = new JButton("View Detail");
 
         // Add action listeners to buttons
-        saveButton.addActionListener(new ActionListener() {
-            @Override
-            public void actionPerformed(ActionEvent e) {
-                saveRecipe(recipeTitle);
-            }
-        });
+        saveButton.addActionListener(e -> saveRecipe(recipe));
 
-        viewDetailButton.addActionListener(new ActionListener() {
-            @Override
-            public void actionPerformed(ActionEvent e) {
-                viewRecipeDetail(recipeTitle);
-            }
-        });
+        viewDetailButton.addActionListener(e -> viewRecipeDetail(recipe));
 
         // Panel to hold the buttons
         JPanel buttonPanel = new JPanel();
@@ -126,106 +107,90 @@ public class BrowsePanel extends JPanel {
     }
 
     // Method to save a recipe (placeholder implementation)
-    private void saveRecipe(String recipeTitle) {
+    private void saveRecipe(Recipe recipe) {
         // Placeholder for save functionality
-        JOptionPane.showMessageDialog(this, "Recipe saved: " + recipeTitle);
+        JOptionPane.showMessageDialog(this, "Recipe saved: " + recipe.getLabel());
     }
 
-    private void viewRecipeDetail(String recipeTitle) {
+    private void viewRecipeDetail(Recipe recipe) {
         try {
-            for (List<String> recipe : recipes) {
-                if (recipe.get(0).equals(recipeTitle)) {
-                    // Remove "Recipe X: " prefix from the title
-                    String title = recipeTitle.substring(recipeTitle.indexOf(":") + 1).trim();
+            // Create a custom dialog
+            JDialog dialog = new JDialog((JFrame) SwingUtilities.getWindowAncestor(this), "Recipe Details", true);
+            dialog.setDefaultCloseOperation(JDialog.DISPOSE_ON_CLOSE);
+            dialog.setSize(500, 400);
+            dialog.setLayout(new BorderLayout());
 
-                    // Create a custom dialog
-                    JDialog dialog = new JDialog((JFrame) SwingUtilities.getWindowAncestor(this), "Recipe Details", true);
-                    dialog.setDefaultCloseOperation(JDialog.DISPOSE_ON_CLOSE);
-                    dialog.setSize(500, 400);
-                    dialog.setLayout(new BorderLayout());
+            // Panel for content
+            JPanel detailsPanel = new JPanel();
+            detailsPanel.setLayout(new BoxLayout(detailsPanel, BoxLayout.Y_AXIS));
+            detailsPanel.setBorder(BorderFactory.createEmptyBorder(10, 10, 10, 10)); // Add padding
 
-                    // Panel for content
-                    JPanel detailsPanel = new JPanel();
-                    detailsPanel.setLayout(new BoxLayout(detailsPanel, BoxLayout.Y_AXIS));
-                    detailsPanel.setBorder(BorderFactory.createEmptyBorder(10, 10, 10, 10)); // Add padding
+            // Initial content is the recipe details
+            showRecipeDetails(detailsPanel, recipe);
 
-                    // Initial content is the recipe details
-                    showRecipeDetails(detailsPanel, recipe);
+            // Add buttons at the bottom
+            JPanel buttonPanel = new JPanel(new FlowLayout(FlowLayout.RIGHT));
 
-                    // Add buttons at the bottom
-                    JPanel buttonPanel = new JPanel(new FlowLayout(FlowLayout.RIGHT));
+            // OK Button
+            JButton okButton = new JButton("OK");
+            okButton.addActionListener(e -> dialog.dispose());
 
-                    // OK Button
-                    JButton okButton = new JButton("OK");
-                    okButton.addActionListener(e -> dialog.dispose());
+            // Toggle Button (acts as a switch between views)
+            JButton toggleButton = new JButton("View Nutrition Facts");
 
-                    // Toggle Button (acts as a switch between views)
-                    JButton toggleButton = new JButton("View Nutrition Facts");
+            // Add action listener to the toggle button
+            toggleButton.addActionListener(new ActionListener() {
+                boolean showingNutritionFacts = false;
 
-                    // Add action listener to the toggle button
-                    toggleButton.addActionListener(new ActionListener() {
-                        boolean showingNutritionFacts = false;
+                @Override
+                public void actionPerformed(ActionEvent e) {
+                    detailsPanel.removeAll();
+                    if (!showingNutritionFacts) {
+                        // Fetch and display nutrition facts
+                        try {
+                            // Use the ingredient list directly
+                            List<String> ingredientsList = recipe.getIngredientLines();
 
-                        @Override
-                        public void actionPerformed(ActionEvent e) {
-                            detailsPanel.removeAll();
-                            if (!showingNutritionFacts) {
-                                // Fetch and display nutrition facts
-                                try {
-                                    // Extract ingredients list
-                                    String ingredientsStr = recipe.get(3).replace("Ingredients: ", "").replace("[", "").replace("]", "");
-                                    String[] ingredientArray = ingredientsStr.split(",");
-                                    List<String> ingredientsList = new ArrayList<>();
-                                    for (String ingredient : ingredientArray) {
-                                        ingredientsList.add(ingredient.trim());
-                                    }
+                            // Fetch nutrition facts using EdamamAPI
+                            List<String> nutritionFacts = EdamamAPI.getNutritionFacts(ingredientsList);
 
-                                    // Fetch nutrition facts using EdamamAPI
-                                    List<String> nutritionFacts = EdamamAPI.getNutritionFacts(ingredientsList);
-
-                                    // Build the HTML content
-                                    StringBuilder nutritionFactsHtml = new StringBuilder("<html><b>Nutrition Facts:</b><br><ul>");
-                                    for (String fact : nutritionFacts) {
-                                        nutritionFactsHtml.append("<li>").append(fact).append("</li>");
-                                    }
-                                    nutritionFactsHtml.append("</ul></html>");
-                                    JLabel nutritionFactsLabel = new JLabel(nutritionFactsHtml.toString());
-                                    detailsPanel.add(nutritionFactsLabel);
-
-                                    // Update button text
-                                    toggleButton.setText("View Recipe Details");
-                                    showingNutritionFacts = true;
-
-                                } catch (Exception ex) {
-                                    JOptionPane.showMessageDialog(BrowsePanel.this, "Error fetching nutrition facts: " + ex.getMessage(), "Error", JOptionPane.ERROR_MESSAGE);
-                                }
-                            } else {
-                                // Display recipe details again
-                                showRecipeDetails(detailsPanel, recipe);
-
-                                // Update button text
-                                toggleButton.setText("View Nutrition Facts");
-                                showingNutritionFacts = false;
+                            // Build the HTML content
+                            StringBuilder nutritionFactsHtml = new StringBuilder("<html><b>Nutrition Facts:</b><br><ul>");
+                            for (String fact : nutritionFacts) {
+                                nutritionFactsHtml.append("<li>").append(fact).append("</li>");
                             }
-                            detailsPanel.revalidate();
-                            detailsPanel.repaint();
+                            nutritionFactsHtml.append("</ul></html>");
+                            JLabel nutritionFactsLabel = new JLabel(nutritionFactsHtml.toString());
+                            detailsPanel.add(nutritionFactsLabel);
+
+                            // Update button text
+                            toggleButton.setText("View Recipe Details");
+                            showingNutritionFacts = true;
+
+                        } catch (Exception ex) {
+                            JOptionPane.showMessageDialog(BrowsePanel.this, "Error fetching nutrition facts: " + ex.getMessage(), "Error", JOptionPane.ERROR_MESSAGE);
                         }
-                    });
+                    } else {
+                        // Display recipe details again
+                        showRecipeDetails(detailsPanel, recipe);
 
-                    buttonPanel.add(toggleButton);
-                    buttonPanel.add(okButton);
-
-                    dialog.add(new JScrollPane(detailsPanel), BorderLayout.CENTER);
-                    dialog.add(buttonPanel, BorderLayout.SOUTH);
-
-                    dialog.setLocationRelativeTo(this);
-                    dialog.setVisible(true);
-                    return;
+                        // Update button text
+                        toggleButton.setText("View Nutrition Facts");
+                        showingNutritionFacts = false;
+                    }
+                    detailsPanel.revalidate();
+                    detailsPanel.repaint();
                 }
-            }
+            });
 
-            // If no matching recipe is found
-            JOptionPane.showMessageDialog(this, "Recipe not found.", "Error", JOptionPane.ERROR_MESSAGE);
+            buttonPanel.add(toggleButton);
+            buttonPanel.add(okButton);
+
+            dialog.add(new JScrollPane(detailsPanel), BorderLayout.CENTER);
+            dialog.add(buttonPanel, BorderLayout.SOUTH);
+
+            dialog.setLocationRelativeTo(this);
+            dialog.setVisible(true);
 
         } catch (Exception ex) {
             JOptionPane.showMessageDialog(this, "Error fetching recipe details: " + ex.getMessage(), "Error", JOptionPane.ERROR_MESSAGE);
@@ -233,20 +198,16 @@ public class BrowsePanel extends JPanel {
     }
 
     // Helper method to display recipe details
-    private void showRecipeDetails(JPanel detailsPanel, List<String> recipe) {
-        // Remove "Recipe X: " prefix from the title
-        String recipeTitle = recipe.get(0);
-        String title = recipeTitle.substring(recipeTitle.indexOf(":") + 1).trim();
-
+    private void showRecipeDetails(JPanel detailsPanel, Recipe recipe) {
         // Add the bolded title
-        JLabel titleLabel = new JLabel("<html><b>" + title + "</b></html>");
+        JLabel titleLabel = new JLabel("<html><b>" + recipe.getLabel() + "</b></html>");
         detailsPanel.add(titleLabel);
 
         // Add a space between the title and the URL
         detailsPanel.add(Box.createVerticalStrut(10));
 
         // Add the URL as a clickable, wrapping link
-        String url = recipe.get(1).replace("URL: ", "");
+        String url = recipe.getUrl();
         String formattedUrl = url.replaceAll("(.{50})", "$1<br>").trim();
         JLabel urlLabel = new JLabel("<html><a href='" + url + "'>" + formattedUrl + "</a></html>");
         urlLabel.setCursor(Cursor.getPredefinedCursor(Cursor.HAND_CURSOR));
@@ -266,7 +227,7 @@ public class BrowsePanel extends JPanel {
         detailsPanel.add(Box.createVerticalStrut(10));
 
         // Add calories rounded to the nearest whole number
-        double rawCalories = Double.parseDouble(recipe.get(2).replace("Calories: ", "").trim());
+        double rawCalories = recipe.getCalories();
         long roundedCalories = Math.round(rawCalories);
         JLabel caloriesLabel = new JLabel("<html><b>Calories:</b> " + roundedCalories + "</html>");
         detailsPanel.add(caloriesLabel);
@@ -275,10 +236,9 @@ public class BrowsePanel extends JPanel {
         detailsPanel.add(Box.createVerticalStrut(10));
 
         // Add ingredients as a bulleted list
-        String ingredients = recipe.get(3).replace("Ingredients: ", "").replace("[", "").replace("]", "");
-        String[] ingredientArray = ingredients.split(",");
+        List<String> ingredientLines = recipe.getIngredientLines();
         StringBuilder bulletList = new StringBuilder("<html><b>Ingredients:</b><ul>");
-        for (String ingredient : ingredientArray) {
+        for (String ingredient : ingredientLines) {
             bulletList.append("<li>").append(ingredient.trim()).append("</li>");
         }
         bulletList.append("</ul></html>");
