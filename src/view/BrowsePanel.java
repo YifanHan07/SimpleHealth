@@ -6,7 +6,7 @@ import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.util.List;
 import data_access.EdamamAPI;
-import entites.Recipe;
+import entities.Recipe;
 
 public class BrowsePanel extends JPanel {
     private JTextField searchField;

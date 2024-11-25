@@ -8,7 +8,7 @@ import java.net.URL;
 import java.util.List;
 import java.util.ArrayList;
 
-import entites.Recipe;
+import entities.Recipe;
 import org.json.JSONArray;
 import org.json.JSONObject;
 

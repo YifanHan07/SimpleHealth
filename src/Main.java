@@ -1,4 +1,4 @@
-import entites.UserAccount;
+import entities.UserAccount;
 import use_case.MyAccountUseCase;
 import data_access.MyAccountController;
 import view.BrowsePanel;

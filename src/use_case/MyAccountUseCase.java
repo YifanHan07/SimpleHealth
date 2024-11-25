@@ -1,6 +1,6 @@
 package use_case;
 
-import entites.UserAccount;
+import entities.UserAccount;
 
 public class MyAccountUseCase {
     private final UserAccount userAccount;
