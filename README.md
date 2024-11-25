@@ -65,7 +65,7 @@ Interactor: In the file, NutritionalSearchInteractor, searches for recipes by sp
 
 
 
-### User Story 6: view detailed nutrition information  
+### User Story 6: View detailed nutrition information  
 
 Description:  Provide detailed nutritional information for a selected recipe.  
 
