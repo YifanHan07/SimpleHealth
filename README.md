@@ -18,7 +18,7 @@ Controller: RecipeSearchController handles the input inputted by the user and pa
 Interactor: RecipeSearchInteractor filters the recipes based on the entered keyword, after checking the API, if no matching recipes are found, an empty result is returned.  
 Presenter: RecipePresenter displays the list of the recipes based on the entered keyword or an error message.  
 
-### User Stor 3：save recipe to personal collection  
+### User Stor 3：Save recipe to personal collection  
 
 Description: Saving the selected recipe to the user’s collection.  
 
