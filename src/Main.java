@@ -9,7 +9,7 @@ import javax.swing.*;
 public class Main {
     public static void main(String[] args) {
         // Create User Account
-        UserAccount userAccount = new UserAccount("John Cena", "Low Carb", "Peanuts");
+        UserAccount userAccount = new UserAccount("John Cena", "All","Peanuts");
 
         // Create Use Case and Controller
         MyAccountUseCase useCase = new MyAccountUseCase(userAccount);
