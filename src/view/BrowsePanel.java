@@ -1,22 +1,21 @@
 package view;
 
-import javax.swing.*;
-import java.awt.*;
-import java.awt.event.ActionEvent;
-import java.awt.event.ActionListener;
-import java.util.List;
 import data_access.EdamamAPI;
 import entities.Recipe;
-import entities.NutritionInfo;
+
+import javax.swing.*;
+import java.awt.*;
+import java.util.List;
 
 public class BrowsePanel extends JPanel {
     private JTextField searchField;
     private JComboBox<String> tagFilter;
-    private JComboBox<Integer> resultsFilter; // Dropdown for max results
+    private JComboBox<Integer> resultsFilter;
     private JButton searchButton;
     private JPanel resultPanel;
 
     private List<Recipe> recipes;
+    private SaveRecipeHandler saveRecipeHandler;
 
     public BrowsePanel() {
         setLayout(new BorderLayout());
@@ -27,16 +26,12 @@ public class BrowsePanel extends JPanel {
 
         searchField = new JTextField(20);
 
-        tagFilter = new JComboBox<>(new String[]{"All", "alcohol-cocktail", "alcohol-free", "celery-free",
-                "crustacean-free", "dairy-free", "egg-free", "fish-free", "fodmap-free", "gluten-free",
-                "immuno-supportive", "keto-friendly", "kidney-friendly", "kosher", "low-fat-abs", "low-potassium",
-                "low-sugar", "lupine-free", "Mediterranean", "mollusk-free", "mustard-free", "no-oil-added", "paleo",
-                "peanut-free", "pescatarian", "pork-free", "red-meat-free", "sesame-free", "shellfish-free", "soy-free",
-                "sugar-conscious", "sulfite-free", "tree-nut-free", "vegan", "vegetarian", "wheat-free"});
+        tagFilter = new JComboBox<>(new String[]{
+                "All", "gluten-free", "vegan", "vegetarian", "keto-friendly", "low-sugar", "low-fat-abs"
+        });
 
-        // Updated dropdown for selecting the number of results
         resultsFilter = new JComboBox<>(new Integer[]{5, 10, 20});
-        resultsFilter.setSelectedItem(10); // Default value
+        resultsFilter.setSelectedItem(10);
 
         searchButton = new JButton("Search");
 
@@ -45,11 +40,10 @@ public class BrowsePanel extends JPanel {
         topPanel.add(searchField);
         topPanel.add(new JLabel("Tag:"));
         topPanel.add(tagFilter);
-        topPanel.add(new JLabel("Results:")); // Label for the new dropdown
+        topPanel.add(new JLabel("Results:"));
         topPanel.add(resultsFilter);
         topPanel.add(searchButton);
 
-        // Result panel to show recipes
         resultPanel = new JPanel();
         resultPanel.setLayout(new BoxLayout(resultPanel, BoxLayout.Y_AXIS));
         JScrollPane scrollPane = new JScrollPane(resultPanel);
@@ -57,157 +51,115 @@ public class BrowsePanel extends JPanel {
         add(topPanel, BorderLayout.NORTH);
         add(scrollPane, BorderLayout.CENTER);
 
-        // Action listener for the search button
         searchButton.addActionListener(e -> performSearch());
     }
 
-    // Method to perform search and update result list
     private void performSearch() {
-        String keyword = searchField.getText();
+        String keyword = searchField.getText().trim();
         String tag = tagFilter.getSelectedItem().toString();
-        if (tag.equals("All")) {
-            tag = "DASH";
+
+        if (tag.equalsIgnoreCase("All")) {
+            tag = ""; // No health parameter
         }
 
-        int maxResults = (int) resultsFilter.getSelectedItem(); // Get the selected maxResults value
+        int maxResults = (int) resultsFilter.getSelectedItem();
+
+        if (keyword.isEmpty()) {
+            JOptionPane.showMessageDialog(this, "Keyword cannot be empty.");
+            return;
+        }
 
         try {
-            // Clear previous results
             resultPanel.removeAll();
+            recipes = EdamamAPI.searchRecipes(keyword, maxResults, tag);
 
-            // Fetch recipes from the API (up to 25 due to API limitations)
-            recipes = EdamamAPI.searchRecipes(keyword, 25, tag);
+            if (recipes.isEmpty()) {
+                JOptionPane.showMessageDialog(this, "No recipes found for the given keyword and tag.");
+                return;
+            }
 
-            // Display only the number of recipes selected by the user
-            int recipesToDisplay = Math.min(maxResults, recipes.size());
-            for (int i = 0; i < recipesToDisplay; i++) {
-                Recipe recipe = recipes.get(i);
+            for (Recipe recipe : recipes) {
                 resultPanel.add(createRecipeItem(recipe));
             }
 
-            // Refresh the result panel to show new content
             resultPanel.revalidate();
             resultPanel.repaint();
-
         } catch (Exception ex) {
             JOptionPane.showMessageDialog(this, "Error fetching recipes: " + ex.getMessage());
         }
     }
 
-    // Helper method to create a panel for each recipe item with Save and View Detail buttons
     private JPanel createRecipeItem(Recipe recipe) {
         JPanel recipeItemPanel = new JPanel(new BorderLayout());
         JLabel titleLabel = new JLabel(recipe.getLabel());
 
-        // Buttons for each recipe item
+        // "Save" Button
         JButton saveButton = new JButton("Save");
+        saveButton.addActionListener(e -> {
+            if (saveRecipeHandler != null) {
+                saveRecipeHandler.save(recipe); // Pass recipe to handler
+                JOptionPane.showMessageDialog(this, recipe.getLabel() + " saved to Collection.");
+            }
+        });
+
+        // "View Detail" Button
         JButton viewDetailButton = new JButton("View Detail");
+        viewDetailButton.addActionListener(e -> showRecipeDetails(recipe));
 
-        // Add action listeners to buttons
-        saveButton.addActionListener(e -> saveRecipe(recipe));
-
-        viewDetailButton.addActionListener(e -> viewRecipeDetail(recipe));
-
-        // Panel to hold the buttons
+        // Add buttons to panel
         JPanel buttonPanel = new JPanel();
         buttonPanel.add(saveButton);
         buttonPanel.add(viewDetailButton);
 
-        // Add title and button panel to the recipe item panel
         recipeItemPanel.add(titleLabel, BorderLayout.CENTER);
         recipeItemPanel.add(buttonPanel, BorderLayout.EAST);
-
         return recipeItemPanel;
     }
 
-    // Method to save a recipe (placeholder implementation)
-    private void saveRecipe(Recipe recipe) {
-        JOptionPane.showMessageDialog(this, "Recipe saved: " + recipe.getLabel());
-    }
+    private void showRecipeDetails(Recipe recipe) {
+        // Create a modal dialog to display recipe details
+        JDialog dialog = new JDialog((JFrame) SwingUtilities.getWindowAncestor(this), "Recipe Details", true);
+        dialog.setSize(400, 300);
+        dialog.setLayout(new BorderLayout());
 
-    // Method to display detailed recipe information
-    private void viewRecipeDetail(Recipe recipe) {
-        try {
-            // Create a custom dialog
-            JDialog dialog = new JDialog((JFrame) SwingUtilities.getWindowAncestor(this), "Recipe Details", true);
-            dialog.setDefaultCloseOperation(JDialog.DISPOSE_ON_CLOSE);
-            dialog.setSize(600, 500);
-            dialog.setLayout(new BorderLayout());
+        JPanel detailsPanel = new JPanel();
+        detailsPanel.setLayout(new BoxLayout(detailsPanel, BoxLayout.Y_AXIS));
+        detailsPanel.setBorder(BorderFactory.createEmptyBorder(10, 10, 10, 10));
 
-            // Panel for content
-            JPanel detailsPanel = new JPanel();
-            detailsPanel.setLayout(new BoxLayout(detailsPanel, BoxLayout.Y_AXIS));
-            detailsPanel.setBorder(BorderFactory.createEmptyBorder(10, 10, 10, 10));
-
-            // Show recipe details
-            showRecipeDetails(detailsPanel, recipe);
-
-            // Add buttons at the bottom
-            JPanel buttonPanel = new JPanel(new FlowLayout(FlowLayout.RIGHT));
-            JButton toggleButton = new JButton("View Nutrition Facts");
-            JButton okButton = new JButton("OK");
-
-            okButton.addActionListener(e -> dialog.dispose());
-
-            toggleButton.addActionListener(new ActionListener() {
-                boolean showingNutritionFacts = false;
-
-                @Override
-                public void actionPerformed(ActionEvent e) {
-                    detailsPanel.removeAll();
-                    if (!showingNutritionFacts) {
-                        try {
-                            // Fetch nutrition info using EdamamAPI
-                            NutritionInfo nutritionInfo = EdamamAPI.getNutritionInfo(recipe.getIngredientLines());
-
-                            // Display nutrition info
-                            JLabel nutritionLabel = new JLabel("<html><b>Nutrition Facts:</b><br>" +
-                                    nutritionInfo.toString().replace("\n", "<br>") + "</html>");
-                            detailsPanel.add(nutritionLabel);
-
-                            toggleButton.setText("View Recipe Details");
-                            showingNutritionFacts = true;
-                        } catch (Exception ex) {
-                            JOptionPane.showMessageDialog(BrowsePanel.this, "Error fetching nutrition facts: " + ex.getMessage(), "Error", JOptionPane.ERROR_MESSAGE);
-                        }
-                    } else {
-                        // Show recipe details again
-                        showRecipeDetails(detailsPanel, recipe);
-
-                        toggleButton.setText("View Nutrition Facts");
-                        showingNutritionFacts = false;
-                    }
-                    detailsPanel.revalidate();
-                    detailsPanel.repaint();
-                }
-            });
-
-            buttonPanel.add(toggleButton);
-            buttonPanel.add(okButton);
-
-            dialog.add(new JScrollPane(detailsPanel), BorderLayout.CENTER);
-            dialog.add(buttonPanel, BorderLayout.SOUTH);
-
-            dialog.setLocationRelativeTo(this);
-            dialog.setVisible(true);
-
-        } catch (Exception ex) {
-            JOptionPane.showMessageDialog(this, "Error displaying recipe details: " + ex.getMessage(), "Error", JOptionPane.ERROR_MESSAGE);
-        }
-    }
-
-    // Helper method to display recipe details
-    private void showRecipeDetails(JPanel detailsPanel, Recipe recipe) {
-        detailsPanel.add(new JLabel("<html><b>Recipe:</b> " + recipe.getLabel() + "</html>"));
-        detailsPanel.add(Box.createVerticalStrut(10));
+        // Add recipe details
+        detailsPanel.add(new JLabel("<html><b>Recipe Name:</b> " + recipe.getLabel() + "</html>"));
+        detailsPanel.add(Box.createVerticalStrut(10)); // Spacer
         detailsPanel.add(new JLabel("<html><b>Calories:</b> " + Math.round(recipe.getCalories()) + " kcal</html>"));
-        detailsPanel.add(Box.createVerticalStrut(10));
+        detailsPanel.add(Box.createVerticalStrut(10)); // Spacer
 
-        StringBuilder ingredientsHtml = new StringBuilder("<html><b>Ingredients:</b><ul>");
+        // Ingredients
+        JLabel ingredientsLabel = new JLabel("<html><b>Ingredients:</b></html>");
+        detailsPanel.add(ingredientsLabel);
+
+        DefaultListModel<String> ingredientListModel = new DefaultListModel<>();
         for (String ingredient : recipe.getIngredientLines()) {
-            ingredientsHtml.append("<li>").append(ingredient).append("</li>");
+            ingredientListModel.addElement(ingredient);
         }
-        ingredientsHtml.append("</ul></html>");
-        detailsPanel.add(new JLabel(ingredientsHtml.toString()));
+        JList<String> ingredientList = new JList<>(ingredientListModel);
+        ingredientList.setEnabled(false); // Read-only list
+        detailsPanel.add(new JScrollPane(ingredientList));
+
+        // OK Button
+        JButton okButton = new JButton("OK");
+        okButton.addActionListener(e -> dialog.dispose());
+
+        dialog.add(detailsPanel, BorderLayout.CENTER);
+        dialog.add(okButton, BorderLayout.SOUTH);
+
+        dialog.setLocationRelativeTo(this);
+        dialog.setVisible(true);
+    }
+
+    public interface SaveRecipeHandler {
+        void save(Recipe recipe);
+    }
+
+    public void setSaveRecipeHandler(SaveRecipeHandler handler) {
+        this.saveRecipeHandler = handler;
     }
 }

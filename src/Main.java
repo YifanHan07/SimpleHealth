@@ -22,11 +22,11 @@ public class Main {
         BrowsePanel browsePanel = new BrowsePanel();
         CollectionPanel collectionPanel = new CollectionPanel();
 
-//        // Integrate Collection Panel with Browse Panel
-//        browsePanel.setSaveRecipeHandler(recipe -> {
-//            collectionPanel.addRecipe(recipe); // Save recipe to collection
-//            JOptionPane.showMessageDialog(null, "Recipe saved to Collection!");
-//        });
+        // Integrate Collection Panel with Browse Panel
+        browsePanel.setSaveRecipeHandler(recipe -> {
+            collectionPanel.addRecipe(recipe); // Save recipe to collection
+            JOptionPane.showMessageDialog(null, "Recipe saved to Collection!");
+        });
 
         // Create JFrame
         JFrame frame = new JFrame("Simple Health Application");
