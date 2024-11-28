@@ -3,8 +3,10 @@ import use_case.MyAccountUseCase;
 import data_access.MyAccountController;
 import view.BrowsePanel;
 import view.MyAccountPanel;
+import view.CollectionPanel;
 
 import javax.swing.*;
+import java.awt.*;
 
 public class Main {
     public static void main(String[] args) {
@@ -18,20 +20,27 @@ public class Main {
         // Create Panels
         MyAccountPanel myAccountPanel = new MyAccountPanel(controller);
         BrowsePanel browsePanel = new BrowsePanel();
+        CollectionPanel collectionPanel = new CollectionPanel();
+
+//        // Integrate Collection Panel with Browse Panel
+//        browsePanel.setSaveRecipeHandler(recipe -> {
+//            collectionPanel.addRecipe(recipe); // Save recipe to collection
+//            JOptionPane.showMessageDialog(null, "Recipe saved to Collection!");
+//        });
 
         // Create JFrame
         JFrame frame = new JFrame("Simple Health Application");
-        frame.setDefaultCloseOperation(javax.swing.WindowConstants.EXIT_ON_CLOSE);
+        frame.setDefaultCloseOperation(WindowConstants.EXIT_ON_CLOSE);
         frame.setSize(800, 600);
-        frame.setLayout(new java.awt.BorderLayout());
 
         // Create Tabbed Pane for Navigation
         JTabbedPane tabbedPane = new JTabbedPane();
         tabbedPane.addTab("My Account", myAccountPanel);
         tabbedPane.addTab("Browse Recipes", browsePanel);
+        tabbedPane.addTab("Collection", collectionPanel); // Add Collection Panel
 
         // Add Tabbed Pane to Frame
-        frame.add(tabbedPane);
+        frame.add(tabbedPane, BorderLayout.CENTER);
         frame.setVisible(true);
     }
 }
