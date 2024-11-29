@@ -1,10 +1,12 @@
 package view;
 
 import data_access.EdamamAPI;
+import entities.NutritionInfo;
 import entities.Recipe;
 
 import javax.swing.*;
 import java.awt.*;
+import java.net.URI;
 import java.util.List;
 
 public class BrowsePanel extends JPanel {
@@ -97,7 +99,7 @@ public class BrowsePanel extends JPanel {
         JButton saveButton = new JButton("Save");
         saveButton.addActionListener(e -> {
             if (saveRecipeHandler != null) {
-                saveRecipeHandler.save(recipe); // Pass recipe to handler
+                saveRecipeHandler.save(recipe);
                 JOptionPane.showMessageDialog(this, recipe.getLabel() + " saved to Collection.");
             }
         });
@@ -106,7 +108,6 @@ public class BrowsePanel extends JPanel {
         JButton viewDetailButton = new JButton("View Detail");
         viewDetailButton.addActionListener(e -> showRecipeDetails(recipe));
 
-        // Add buttons to panel
         JPanel buttonPanel = new JPanel();
         buttonPanel.add(saveButton);
         buttonPanel.add(viewDetailButton);
@@ -117,38 +118,56 @@ public class BrowsePanel extends JPanel {
     }
 
     private void showRecipeDetails(Recipe recipe) {
-        // Create a modal dialog to display recipe details
         JDialog dialog = new JDialog((JFrame) SwingUtilities.getWindowAncestor(this), "Recipe Details", true);
-        dialog.setSize(400, 300);
+        dialog.setSize(500, 600);
         dialog.setLayout(new BorderLayout());
 
         JPanel detailsPanel = new JPanel();
         detailsPanel.setLayout(new BoxLayout(detailsPanel, BoxLayout.Y_AXIS));
         detailsPanel.setBorder(BorderFactory.createEmptyBorder(10, 10, 10, 10));
 
-        // Add recipe details
-        detailsPanel.add(new JLabel("<html><b>Recipe Name:</b> " + recipe.getLabel() + "</html>"));
-        detailsPanel.add(Box.createVerticalStrut(10)); // Spacer
-        detailsPanel.add(new JLabel("<html><b>Calories:</b> " + Math.round(recipe.getCalories()) + " kcal</html>"));
-        detailsPanel.add(Box.createVerticalStrut(10)); // Spacer
+        detailsPanel.add(new JLabel("<html><h3>" + recipe.getLabel() + "</h3></html>"));
 
-        // Ingredients
-        JLabel ingredientsLabel = new JLabel("<html><b>Ingredients:</b></html>");
-        detailsPanel.add(ingredientsLabel);
+        // Add Recipe URL
+        JLabel urlLabel = new JLabel("<html><a href='" + recipe.getUrl() + "'>View Full Recipe</a></html>");
+        urlLabel.setCursor(Cursor.getPredefinedCursor(Cursor.HAND_CURSOR));
+        urlLabel.addMouseListener(new java.awt.event.MouseAdapter() {
+            @Override
+            public void mouseClicked(java.awt.event.MouseEvent e) {
+                try {
+                    Desktop.getDesktop().browse(new URI(recipe.getUrl()));
+                } catch (Exception ex) {
+                    JOptionPane.showMessageDialog(BrowsePanel.this, "Error opening URL: " + ex.getMessage());
+                }
+            }
+        });
+        detailsPanel.add(urlLabel);
 
-        DefaultListModel<String> ingredientListModel = new DefaultListModel<>();
-        for (String ingredient : recipe.getIngredientLines()) {
-            ingredientListModel.addElement(ingredient);
+        try {
+            // Fetch Nutrition Info
+            NutritionInfo nutritionInfo = EdamamAPI.getNutritionInfo(recipe.getIngredientLines());
+
+            // Basic nutrients
+            detailsPanel.add(new JLabel("<html><b>Calories:</b> " + nutritionInfo.getCalories() + " kcal</html>"));
+            detailsPanel.add(new JLabel("<html><b>Fat:</b> " + nutritionInfo.getFat() + " g</html>"));
+            detailsPanel.add(new JLabel("<html><b>Carbohydrates:</b> " + nutritionInfo.getCarbohydrates() + " g</html>"));
+            detailsPanel.add(new JLabel("<html><b>Fiber:</b> " + nutritionInfo.getFiber() + " g</html>"));
+            detailsPanel.add(new JLabel("<html><b>Sugar:</b> " + nutritionInfo.getSugar() + " g</html>"));
+
+            // Additional nutrients
+            detailsPanel.add(new JLabel("<html><b>Vitamins and Minerals:</b></html>"));
+            nutritionInfo.getAdditionalNutrients().forEach((key, value) -> {
+                detailsPanel.add(new JLabel("<html>" + key + ": " + value + "</html>"));
+            });
+
+        } catch (Exception ex) {
+            detailsPanel.add(new JLabel("Error fetching nutrition info: " + ex.getMessage()));
         }
-        JList<String> ingredientList = new JList<>(ingredientListModel);
-        ingredientList.setEnabled(false); // Read-only list
-        detailsPanel.add(new JScrollPane(ingredientList));
 
-        // OK Button
         JButton okButton = new JButton("OK");
         okButton.addActionListener(e -> dialog.dispose());
 
-        dialog.add(detailsPanel, BorderLayout.CENTER);
+        dialog.add(new JScrollPane(detailsPanel), BorderLayout.CENTER);
         dialog.add(okButton, BorderLayout.SOUTH);
 
         dialog.setLocationRelativeTo(this);

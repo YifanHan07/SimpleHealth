@@ -10,37 +10,45 @@ import java.io.InputStreamReader;
 import java.io.OutputStream;
 import java.net.HttpURLConnection;
 import java.net.URL;
-import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.ArrayList;
+import java.util.Map;
 
 /**
  * EdamamAPI class for interacting with the Edamam Recipe and Nutrition APIs.
- * Provides methods to search recipes and fetch detailed nutrition facts.
  */
 public class EdamamAPI {
 
-    private static final String APP_ID = "6f7c167a"; // App ID for Recipe API
-    private static final String APP_KEY = "9aaac9683d760eaba6e11c57903c20a8"; // App Key for Recipe API
+    // Constants for Recipe API
+    private static final String APP_ID = "6f7c167a";
+    private static final String APP_KEY = "9aaac9683d760eaba6e11c57903c20a8";
 
-    private static final String NUT_APP_ID = "93e3d9f6"; // App ID for Nutrition API
-    private static final String NUT_APP_KEY = "b4c03118acc27b97e245fbdac04d7293"; // App Key for Nutrition API
+    // Constants for Nutrition API
+    private static final String NUT_APP_ID = "93e3d9f6";
+    private static final String NUT_APP_KEY = "b4c03118acc27b97e245fbdac04d7293";
 
     /**
-     * Searches for recipes based on a query, max results, and an optional health tag.
+     * Searches for recipes based on query, max results, and an optional health tag.
+     * If tag is "All", the health parameter is omitted.
      *
-     * @param query      The search query (e.g., "Pasta").
-     * @param maxResults The maximum number of recipes to fetch.
-     * @param tag        An optional health tag filter (e.g., "gluten-free"). Use "All" for no filter.
+     * @param query      Search keyword (e.g., "Pasta").
+     * @param maxResults Maximum number of recipes to fetch.
+     * @param tag        Optional health filter (e.g., "gluten-free"). Use "All" for no filter.
      * @return A list of Recipe objects.
-     * @throws Exception If the API call fails or the response cannot be parsed.
+     * @throws Exception If API call fails or response is invalid.
      */
     public static List<Recipe> searchRecipes(String query, int maxResults, String tag) throws Exception {
-        // Construct the API URL
+        // Construct base API URL
         String apiUrl = String.format(
-                "https://api.edamam.com/api/recipes/v2?type=public&q=%s&app_id=%s&app_key=%s&from=0&to=%d&health=%s",
-                java.net.URLEncoder.encode(query, "UTF-8"), APP_ID, APP_KEY, maxResults,
-                tag.equalsIgnoreCase("All") ? "" : tag
+                "https://api.edamam.com/api/recipes/v2?type=public&q=%s&app_id=%s&app_key=%s&from=0&to=%d",
+                java.net.URLEncoder.encode(query, "UTF-8"), APP_ID, APP_KEY, maxResults
         );
+
+        // Append health parameter only if tag is not "All"
+        if (!tag.equalsIgnoreCase("All") && !tag.trim().isEmpty()) {
+            apiUrl += "&health=" + java.net.URLEncoder.encode(tag, "UTF-8");
+        }
 
         // Send GET request
         URL url = new URL(apiUrl);
@@ -49,7 +57,7 @@ public class EdamamAPI {
         int responseCode = conn.getResponseCode();
 
         if (responseCode == HttpURLConnection.HTTP_OK) {
-            // Read the API response
+            // Read response
             BufferedReader in = new BufferedReader(new InputStreamReader(conn.getInputStream()));
             StringBuilder response = new StringBuilder();
             String inputLine;
@@ -63,7 +71,7 @@ public class EdamamAPI {
             JSONArray hits = jsonResponse.getJSONArray("hits");
             List<Recipe> recipeList = new ArrayList<>();
 
-            // Extract recipe details
+            // Extract recipes from hits
             for (int i = 0; i < hits.length(); i++) {
                 JSONObject recipeJson = hits.getJSONObject(i).getJSONObject("recipe");
                 String label = recipeJson.getString("label");
@@ -77,13 +85,14 @@ public class EdamamAPI {
                     ingredientLines.add(ingredientsArray.getString(j));
                 }
 
-                // Create Recipe object and add to the list
+                // Create Recipe object and add to list
                 Recipe recipe = new Recipe(label, urlStr, calories, ingredientLines);
                 recipeList.add(recipe);
             }
             return recipeList;
+
         } else {
-            // Handle API error response
+            // Handle error response
             BufferedReader in = new BufferedReader(new InputStreamReader(conn.getErrorStream()));
             StringBuilder errorResponse = new StringBuilder();
             String inputLine;
@@ -96,20 +105,20 @@ public class EdamamAPI {
     }
 
     /**
-     * Fetches detailed nutrition information for a list of ingredients.
+     * Fetches detailed nutrition facts for a given list of ingredients.
      *
-     * @param ingredients A list of ingredient strings (e.g., "1 cup rice", "2 chicken breasts").
+     * @param ingredients List of ingredients (e.g., "1 cup rice", "2 chicken breasts").
      * @return A NutritionInfo object containing detailed nutrition facts.
-     * @throws Exception If the API call fails or the response cannot be parsed.
+     * @throws Exception If API call fails or response is invalid.
      */
     public static NutritionInfo getNutritionInfo(List<String> ingredients) throws Exception {
-        // Construct the API URL
+        // Construct API URL
         String apiUrl = String.format(
                 "https://api.edamam.com/api/nutrition-details?app_id=%s&app_key=%s",
                 NUT_APP_ID, NUT_APP_KEY
         );
 
-        // Prepare JSON payload
+        // Create JSON payload
         JSONObject payload = new JSONObject();
         payload.put("title", "Nutrition Analysis");
         payload.put("ingr", ingredients);
@@ -122,7 +131,6 @@ public class EdamamAPI {
         conn.setRequestProperty("Accept", "application/json");
         conn.setDoOutput(true);
 
-        // Write JSON payload to request body
         OutputStream os = conn.getOutputStream();
         os.write(payload.toString().getBytes("UTF-8"));
         os.flush();
@@ -131,7 +139,7 @@ public class EdamamAPI {
         int responseCode = conn.getResponseCode();
 
         if (responseCode == HttpURLConnection.HTTP_OK) {
-            // Read the API response
+            // Read response
             BufferedReader in = new BufferedReader(new InputStreamReader(conn.getInputStream()));
             StringBuilder response = new StringBuilder();
             String inputLine;
@@ -144,17 +152,28 @@ public class EdamamAPI {
             JSONObject jsonResponse = new JSONObject(response.toString());
             JSONObject totalNutrients = jsonResponse.getJSONObject("totalNutrients");
 
-            // Extract key nutrients
-            int calories = (int) getNutrientValue(totalNutrients, "ENERC_KCAL"); // Energy in kcal
-            double fat = getNutrientValue(totalNutrients, "FAT");               // Fat in grams
-            double carbohydrates = getNutrientValue(totalNutrients, "CHOCDF"); // Carbohydrates in grams
-            double fiber = getNutrientValue(totalNutrients, "FIBTG");          // Fiber in grams
-            double sugar = getNutrientValue(totalNutrients, "SUGAR");          // Sugar in grams
+            // Extract main nutrients
+            int calories = (int) getNutrientValue(totalNutrients, "ENERC_KCAL");
+            double fat = getNutrientValue(totalNutrients, "FAT");
+            double carbohydrates = getNutrientValue(totalNutrients, "CHOCDF");
+            double fiber = getNutrientValue(totalNutrients, "FIBTG");
+            double sugar = getNutrientValue(totalNutrients, "SUGAR");
 
-            // Return a NutritionInfo object
-            return new NutritionInfo(calories, fat, carbohydrates, fiber, sugar);
+            // Extract additional nutrients (vitamins, minerals, etc.)
+            Map<String, Double> additionalNutrients = new HashMap<>();
+            for (String key : totalNutrients.keySet()) {
+                JSONObject nutrient = totalNutrients.getJSONObject(key);
+                String label = nutrient.getString("label");
+                double quantity = nutrient.getDouble("quantity");
+                String unit = nutrient.getString("unit");
+                additionalNutrients.put(label + " (" + unit + ")", quantity);
+            }
+
+            // Return a NutritionInfo object with additional nutrients
+            return new NutritionInfo(calories, fat, carbohydrates, fiber, sugar, additionalNutrients);
+
         } else {
-            // Handle API error response
+            // Handle error response
             BufferedReader in = new BufferedReader(new InputStreamReader(conn.getErrorStream()));
             StringBuilder errorResponse = new StringBuilder();
             String inputLine;
