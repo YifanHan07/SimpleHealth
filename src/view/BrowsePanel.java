@@ -7,6 +7,10 @@ import java.awt.event.ActionListener;
 import java.util.List;
 import data_access.EdamamAPI;
 import entities.Recipe;
+import entities.UserAccount;
+
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 public class BrowsePanel extends JPanel {
     private JTextField searchField;
@@ -14,10 +18,13 @@ public class BrowsePanel extends JPanel {
     private JComboBox<Integer> resultsFilter; // Dropdown for max results
     private JButton searchButton;
     private JPanel resultPanel;
+    private static final Logger LOGGER = Logger.getLogger(BrowsePanel.class.getName());
+    private final UserAccount userAccount;
+    private static final String ERROR_TITLE = "Error";
 
-    private List<Recipe> recipes;
 
-    public BrowsePanel() {
+    public BrowsePanel(UserAccount userAccount) {
+        this.userAccount = userAccount;
         setLayout(new BorderLayout());
 
         // Top panel for search input and filters
@@ -70,14 +77,14 @@ public class BrowsePanel extends JPanel {
 
         int maxResults = (int) resultsFilter.getSelectedItem(); // Get the selected maxResults value
 
-        System.out.println("maxResults: " + maxResults);
+        LOGGER.log(Level.INFO, "maxResults: {0}", maxResults);
 
         try {
             // Clear previous results
             resultPanel.removeAll();
 
             // Fetch recipes from the API (up to 25 due to API limitations)
-            recipes = EdamamAPI.searchRecipes(keyword, 25, tag);
+            List<Recipe> recipes = EdamamAPI.searchRecipes(keyword, 25, tag);
 
             // Display only the number of recipes selected by the user
             int recipesToDisplay = Math.min(maxResults, recipes.size());
@@ -102,10 +109,13 @@ public class BrowsePanel extends JPanel {
 
         // Buttons for each recipe item
         JButton saveButton = new JButton("Save");
-        JButton viewDetailButton = new JButton("View Detail");
+        JButton viewDetailButton = new JButton("View Details");
 
         // Add action listeners to buttons
-        saveButton.addActionListener(e -> saveRecipe(recipe));
+        saveButton.addActionListener(e -> {
+            userAccount.addSavedRecipe(recipe); // Save the recipe to the user's saved recipes
+            JOptionPane.showMessageDialog(this, "Recipe saved: " + recipe.getLabel(), "Saved", JOptionPane.INFORMATION_MESSAGE);
+        });
 
         viewDetailButton.addActionListener(e -> viewRecipeDetail(recipe));
 
@@ -121,17 +131,11 @@ public class BrowsePanel extends JPanel {
         return recipeItemPanel;
     }
 
-    // Method to save a recipe (placeholder implementation)
-    private void saveRecipe(Recipe recipe) {
-        // Placeholder for save functionality
-        JOptionPane.showMessageDialog(this, "Recipe saved: " + recipe.getLabel());
-    }
-
     private void viewRecipeDetail(Recipe recipe) {
         try {
             // Create a custom dialog
             JDialog dialog = new JDialog((JFrame) SwingUtilities.getWindowAncestor(this), "Recipe Details", true);
-            dialog.setDefaultCloseOperation(JDialog.DISPOSE_ON_CLOSE);
+            dialog.setDefaultCloseOperation(javax.swing.WindowConstants.DISPOSE_ON_CLOSE);
             dialog.setSize(500, 400);
             dialog.setLayout(new BorderLayout());
 
@@ -183,7 +187,7 @@ public class BrowsePanel extends JPanel {
                             showingNutritionFacts = true;
 
                         } catch (Exception ex) {
-                            JOptionPane.showMessageDialog(BrowsePanel.this, "Error fetching nutrition facts: " + ex.getMessage(), "Error", JOptionPane.ERROR_MESSAGE);
+                            JOptionPane.showMessageDialog(this, "Error fetching recipes", ERROR_TITLE, JOptionPane.ERROR_MESSAGE);
                         }
                     } else {
                         // Display recipe details again
@@ -208,7 +212,7 @@ public class BrowsePanel extends JPanel {
             dialog.setVisible(true);
 
         } catch (Exception ex) {
-            JOptionPane.showMessageDialog(this, "Error fetching recipe details: " + ex.getMessage(), "Error", JOptionPane.ERROR_MESSAGE);
+            JOptionPane.showMessageDialog(this, "Error fetching recipe details: " + ex.getMessage(), "ERROR_TITLE", JOptionPane.ERROR_MESSAGE);
         }
     }
 
@@ -232,7 +236,7 @@ public class BrowsePanel extends JPanel {
                 try {
                     Desktop.getDesktop().browse(new java.net.URI(url));
                 } catch (Exception ex) {
-                    JOptionPane.showMessageDialog(BrowsePanel.this, "Error opening URL: " + ex.getMessage(), "Error", JOptionPane.ERROR_MESSAGE);
+                    JOptionPane.showMessageDialog(BrowsePanel.this, "Error opening URL: " + ex.getMessage(), "ERROR_TITLE", JOptionPane.ERROR_MESSAGE);
                 }
             }
         });

@@ -1,14 +1,19 @@
 package entities;
 
+import java.util.ArrayList;
+import java.util.List;
+
 public class UserAccount {
     private String username;
     private String preferences;
     private String allergies;
+    private List<Recipe> savedRecipes; // New field for saved recipes
 
     public UserAccount(String username, String preferences, String allergies) {
         this.username = username;
         this.preferences = preferences;
         this.allergies = allergies;
+        this.savedRecipes = new ArrayList<>();
     }
 
     // Getter and Setter for Username
@@ -37,4 +42,15 @@ public class UserAccount {
     public void setAllergies(String allergies) {
         this.allergies = allergies;
     }
+
+    public void addSavedRecipe(Recipe recipe) {
+        if (!savedRecipes.contains(recipe)) {
+            savedRecipes.add(recipe);
+        }
+    }
+
+    public List<Recipe> getSavedRecipes() {
+        return savedRecipes;
+    }
+
 }

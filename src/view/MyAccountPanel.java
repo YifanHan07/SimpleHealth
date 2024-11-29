@@ -12,7 +12,6 @@ public class MyAccountPanel extends JPanel {
     private final JTextField allergiesField;
     private final JComboBox<String> preferencesDropdown;
     private final JPanel selectedPreferencesPanel;
-    private final JScrollPane scrollPane; // Scrollable container for the preferences panel
     private final List<String> selectedPreferences;
 
     public MyAccountPanel(MyAccountController controller) {
@@ -68,7 +67,8 @@ public class MyAccountPanel extends JPanel {
         selectedPreferencesPanel = new JPanel();
         selectedPreferencesPanel.setLayout(new BoxLayout(selectedPreferencesPanel, BoxLayout.Y_AXIS)); // Vertical alignment
 
-        scrollPane = new JScrollPane(selectedPreferencesPanel);
+        // Scrollable container for the preferences panel
+        JScrollPane scrollPane = new JScrollPane(selectedPreferencesPanel);
         scrollPane.setPreferredSize(new Dimension(200, 100)); // Fixed size with scroll
         scrollPane.setVerticalScrollBarPolicy(ScrollPaneConstants.VERTICAL_SCROLLBAR_AS_NEEDED);
 
