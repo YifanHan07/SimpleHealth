@@ -22,7 +22,8 @@ public class EdamamAPI {
         try {
             // Test searchRecipes functionality
             System.out.println("Testing Recipe Search:");
-            List<List<String>> recipes = searchRecipes("Pasta", 15, "DASH");
+            StringBuilder tag = new StringBuilder("health=DASH");
+            List<List<String>> recipes = searchRecipes("Pasta", 15, tag);
             if (recipes != null) {
                 for (List<String> recipe : recipes) {
                     for (String detail : recipe) {
@@ -53,10 +54,10 @@ public class EdamamAPI {
         }
     }
 
-    public static List<List<String>> searchRecipes(String query, int maxResults, String tag) throws Exception {
+    public static List<List<String>> searchRecipes(String query, int maxResults, StringBuilder tagQuery) throws Exception {
         String apiUrl = String.format(
-                "https://api.edamam.com/api/recipes/v2?type=public&q=%s&app_id=%s&app_key=%s&from=0&to=%d&health=%s",
-                java.net.URLEncoder.encode(query, "UTF-8"), APP_ID, APP_KEY, maxResults, tag
+                "https://api.edamam.com/api/recipes/v2?type=public&q=%s&app_id=%s&app_key=%s&from=0&to=%d&%s",
+                java.net.URLEncoder.encode(query, "UTF-8"), APP_ID, APP_KEY, maxResults, tagQuery.toString()
         );
 
         // Send GET request
