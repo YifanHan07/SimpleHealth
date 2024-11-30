@@ -7,14 +7,17 @@ import entity.Recipe;
 import javax.swing.*;
 import java.awt.*;
 import java.net.URI;
+import java.util.ArrayList;
 import java.util.List;
+import java.util.Objects;
 
 public class BrowsePanel extends JPanel {
     private JTextField searchField;
-    private JComboBox<String> tagFilter;
     private JComboBox<Integer> resultsFilter;
     private JButton searchButton;
     private JPanel resultPanel;
+    private JButton tagFilterButton = new JButton("Select Tags");
+    private List<String> selectedTags = new ArrayList<>();
 
     private List<Recipe> recipes;
     private SaveRecipeHandler saveRecipeHandler;
@@ -27,10 +30,8 @@ public class BrowsePanel extends JPanel {
         topPanel.setLayout(new FlowLayout());
 
         searchField = new JTextField(20);
+        tagFilterButton.addActionListener(e -> selection());
 
-        tagFilter = new JComboBox<>(new String[]{
-                "All", "gluten-free", "vegan", "vegetarian", "keto-friendly", "low-sugar", "low-fat-abs"
-        });
 
         resultsFilter = new JComboBox<>(new Integer[]{5, 10, 20});
         resultsFilter.setSelectedItem(10);
@@ -41,7 +42,7 @@ public class BrowsePanel extends JPanel {
         topPanel.add(new JLabel("Keyword:"));
         topPanel.add(searchField);
         topPanel.add(new JLabel("Tag:"));
-        topPanel.add(tagFilter);
+        topPanel.add(tagFilterButton);
         topPanel.add(new JLabel("Results:"));
         topPanel.add(resultsFilter);
         topPanel.add(searchButton);
@@ -56,24 +57,73 @@ public class BrowsePanel extends JPanel {
         searchButton.addActionListener(e -> performSearch());
     }
 
-    private void performSearch() {
-        String keyword = searchField.getText().trim();
-        String tag = tagFilter.getSelectedItem().toString();
+    private void selection() {
+        String[] tags = {"All", "alcohol-cocktail", "alcohol-free", "celery-free",
+                "crustacean-free", "dairy-free", "egg-free", "fish-free", "fodmap-free", "gluten-free",
+                "immuno-supportive", "keto-friendly", "kidney-friendly", "kosher", "low-fat-abs", "low-potassium",
+                "low-sugar", "lupine-free", "Mediterranean", "mollusk-free", "mustard-free", "no-oil-added", "paleo",
+                "peanut-free", "pescatarian", "pork-free", "red-meat-free", "sesame-free", "shellfish-free", "soy-free",
+                "sugar-conscious", "sulfite-free", "tree-nut-free", "vegan", "vegetarian", "wheat-free"};
 
-        if (tag.equalsIgnoreCase("All")) {
-            tag = ""; // No health parameter
+        // Create checkboxes for tags
+        JPanel checkboxPanel = new JPanel(new GridLayout(tags.length, 1));
+        JCheckBox[] checkBoxes = new JCheckBox[tags.length];
+
+        for (int i = 0; i < tags.length; i++) {
+            checkBoxes[i] = new JCheckBox(tags[i]);
+            checkBoxes[i].setSelected(selectedTags.contains(tags[i]));
+            checkboxPanel.add(checkBoxes[i]);
         }
 
-        int maxResults = (int) resultsFilter.getSelectedItem();
+        int result = JOptionPane.showConfirmDialog(
+                this,
+                new JScrollPane(checkboxPanel),
+                "Select Tags",
+                JOptionPane.OK_CANCEL_OPTION
+        );
+
+        if (result == JOptionPane.OK_OPTION) {
+            selectedTags.clear();
+            for (JCheckBox checkBox : checkBoxes) {
+                if (checkBox.isSelected()) {
+                    selectedTags.add(checkBox.getText());
+                }
+            }
+
+            String buttonText = selectedTags.isEmpty()
+                    ? "Select Tags"
+                    : String.join(", ", selectedTags.subList(0, Math.min(selectedTags.size(), 3)))
+                    + (selectedTags.size() > 3 ? "..." : "");
+            tagFilterButton.setText(buttonText);
+        }
+    }
+
+    private void performSearch() {
+        String keyword = searchField.getText().trim();
+        String tag = String.join(", ", selectedTags);
+        StringBuilder tags = new StringBuilder();
 
         if (keyword.isEmpty()) {
             JOptionPane.showMessageDialog(this, "Keyword cannot be empty.");
             return;
         }
+        if (Objects.equals(tag, "All")) {
+            tags.append("&health=DASH");
+        }
+        else {
+            for (int i = 0; i < selectedTags.size(); i++) {
+                if (tags.length() > 0) {
+                    tags.append("&");
+                }
+                tags.append("health=").append(selectedTags.get(i));
+            }
+        }
+
+        int maxResults = (int) resultsFilter.getSelectedItem();
 
         try {
             resultPanel.removeAll();
-            recipes = EdamamAPI.searchRecipes(keyword, maxResults, tag);
+            recipes = EdamamAPI.searchRecipes(keyword, maxResults, tags);
 
             if (recipes.isEmpty()) {
                 JOptionPane.showMessageDialog(this, "No recipes found for the given keyword and tag.");
