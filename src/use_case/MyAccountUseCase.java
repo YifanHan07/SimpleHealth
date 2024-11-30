@@ -1,12 +1,15 @@
 package use_case;
 
-import entities.UserAccount;
+import data_access.InMemoryUserDataAccessObject;
+import entity.UserAccount;
 
 public class MyAccountUseCase {
     private final UserAccount userAccount;
+    private final InMemoryUserDataAccessObject userDataAccessObject;
 
-    public MyAccountUseCase(UserAccount userAccount) {
+    public MyAccountUseCase(UserAccount userAccount, InMemoryUserDataAccessObject userDataAccessObject) {
         this.userAccount = userAccount;
+        this.userDataAccessObject = userDataAccessObject;
     }
 
     public String getName() {
@@ -15,6 +18,7 @@ public class MyAccountUseCase {
 
     public void updateName(String name) {
         userAccount.setUsername(name);
+        userDataAccessObject.save(userAccount);
     }
 
     public String getPreferences() {
@@ -23,6 +27,7 @@ public class MyAccountUseCase {
 
     public void updatePreferences(String preferences) {
         userAccount.setPreferences(preferences);
+        userDataAccessObject.save(userAccount);
     }
 
     public String getAllergies() {
@@ -31,5 +36,6 @@ public class MyAccountUseCase {
 
     public void updateAllergies(String allergies) {
         userAccount.setAllergies(allergies);
+        userDataAccessObject.save(userAccount);
     }
 }

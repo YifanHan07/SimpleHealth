@@ -1,8 +1,8 @@
 package view;
 
 import data_access.EdamamAPI;
-import entities.NutritionInfo;
-import entities.Recipe;
+import entity.NutritionInfo;
+import entity.Recipe;
 
 import javax.swing.*;
 import java.awt.*;

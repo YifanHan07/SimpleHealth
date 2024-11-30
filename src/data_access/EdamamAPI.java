@@ -1,7 +1,7 @@
 package data_access;
 
-import entities.NutritionInfo;
-import entities.Recipe;
+import entity.NutritionInfo;
+import entity.Recipe;
 import org.json.JSONArray;
 import org.json.JSONObject;
 
