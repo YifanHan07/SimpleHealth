@@ -19,7 +19,7 @@ public class BrowsePanel extends JPanel {
     private JButton searchButton;
     private JPanel resultPanel;
     private static final Logger LOGGER = Logger.getLogger(BrowsePanel.class.getName());
-    private final UserAccount userAccount;
+    private final transient UserAccount userAccount;
     private static final String ERROR_TITLE = "Error";
 
 
@@ -187,7 +187,7 @@ public class BrowsePanel extends JPanel {
                             showingNutritionFacts = true;
 
                         } catch (Exception ex) {
-                            JOptionPane.showMessageDialog(this, "Error fetching recipes", ERROR_TITLE, JOptionPane.ERROR_MESSAGE);
+                            JOptionPane.showMessageDialog(BrowsePanel.this, "Error fetching recipes", ERROR_TITLE, JOptionPane.ERROR_MESSAGE);
                         }
                     } else {
                         // Display recipe details again
