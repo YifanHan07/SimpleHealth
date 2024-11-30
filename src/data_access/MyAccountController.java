@@ -32,4 +32,10 @@ public class MyAccountController {
     public void updateAllergies(String allergies) {
         useCase.updateAllergies(allergies);
     }
+
+    public void update(String name, String preferences, String allergies) {
+        updateName(name);
+        updatePreferences(preferences);
+        updateAllergies(allergies);
+    }
 }

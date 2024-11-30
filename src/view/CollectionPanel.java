@@ -1,6 +1,7 @@
 package view;
 
-import entities.Recipe;
+
+import entity.Recipe;
 
 import javax.swing.*;
 import java.awt.*;

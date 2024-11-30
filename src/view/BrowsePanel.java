@@ -1,8 +1,8 @@
 package view;
 
 import data_access.EdamamAPI;
-import entities.NutritionInfo;
-import entities.Recipe;
+import entity.NutritionInfo;
+import entity.Recipe;
 
 import javax.swing.*;
 import java.awt.*;
@@ -155,7 +155,7 @@ public class BrowsePanel extends JPanel {
             detailsPanel.add(new JLabel("<html><b>Sugar:</b> " + nutritionInfo.getSugar() + " g</html>"));
 
             // Additional nutrients
-            detailsPanel.add(new JLabel("<html><b>Vitamins and Minerals:</b></html>"));
+            detailsPanel.add(new JLabel("<html><b>Other Nutrition:</b></html>"));
             nutritionInfo.getAdditionalNutrients().forEach((key, value) -> {
                 detailsPanel.add(new JLabel("<html>" + key + ": " + value + "</html>"));
             });

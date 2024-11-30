@@ -1,6 +1,8 @@
 package view;
 
 import data_access.MyAccountController;
+import interface_adapter.logout.LogoutController;
+
 import javax.swing.*;
 import java.awt.*;
 
@@ -8,8 +10,9 @@ public class MyAccountPanel extends JPanel {
     private final JTextField nameField;
     private final JTextField preferencesField;
     private final JTextField allergiesField;
+    private LogoutController logoutController;
 
-    public MyAccountPanel(MyAccountController controller) {
+    public MyAccountPanel(MyAccountController controller ) {
         setLayout(new GridBagLayout());
         setBorder(BorderFactory.createEmptyBorder(20, 20, 20, 20));
 
@@ -47,6 +50,22 @@ public class MyAccountPanel extends JPanel {
         gbc.gridx = 1;
         add(allergiesField, gbc);
 
+
+        // Buttons Section
+        JPanel buttonPanel = new JPanel(new GridBagLayout());
+        GridBagConstraints buttonGbc = new GridBagConstraints();
+        buttonGbc.insets = new Insets(0, 10, 0, 10);
+        buttonGbc.fill = GridBagConstraints.HORIZONTAL;
+        buttonGbc.weightx = 0.5;
+
+        // Logout Button
+        JButton logout = new JButton("Log Out");
+        logout.addActionListener(e -> {
+            logoutController.execute(nameField.getText());
+        });
+        buttonGbc.gridx = 0;
+        buttonPanel.add(logout, buttonGbc);
+
         // Save Button
         JButton saveButton = new JButton("Save");
         saveButton.addActionListener(e -> {
@@ -55,10 +74,22 @@ public class MyAccountPanel extends JPanel {
             controller.updateAllergies(allergiesField.getText());
             JOptionPane.showMessageDialog(this, "Details Saved Successfully!");
         });
+        buttonGbc.gridx = 1;
+        buttonPanel.add(saveButton, buttonGbc);
 
+        // Add button panel to main layout
         gbc.gridx = 0;
         gbc.gridy = 3;
         gbc.gridwidth = 2;
-        add(saveButton, gbc);
+        add(buttonPanel, gbc);
+    }
+    public void updateFields(MyAccountController controller) {
+        nameField.setText(controller.getName());
+        preferencesField.setText(controller.getPreferences());
+        allergiesField.setText(controller.getAllergies());
+    }
+
+    public void setLogoutController(LogoutController logoutController) {
+        this.logoutController = logoutController;
     }
 }
