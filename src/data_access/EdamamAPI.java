@@ -76,7 +76,7 @@ public class EdamamAPI {
                 JSONObject recipeJson = hits.getJSONObject(i).getJSONObject("recipe");
                 String label = recipeJson.getString("label");
                 String urlStr = recipeJson.getString("url");
-                double calories = recipeJson.getDouble("calories");
+                double calories = roundToTwoDecimals(recipeJson.getDouble("calories")); // Round to 2 decimals
                 JSONArray ingredientsArray = recipeJson.getJSONArray("ingredientLines");
 
                 // Convert JSONArray to List<String>
@@ -153,18 +153,18 @@ public class EdamamAPI {
             JSONObject totalNutrients = jsonResponse.getJSONObject("totalNutrients");
 
             // Extract main nutrients
-            int calories = (int) getNutrientValue(totalNutrients, "ENERC_KCAL");
-            double fat = getNutrientValue(totalNutrients, "FAT");
-            double carbohydrates = getNutrientValue(totalNutrients, "CHOCDF");
-            double fiber = getNutrientValue(totalNutrients, "FIBTG");
-            double sugar = getNutrientValue(totalNutrients, "SUGAR");
+            int calories = (int) roundToTwoDecimals(getNutrientValue(totalNutrients, "ENERC_KCAL"));
+            double fat = roundToTwoDecimals(getNutrientValue(totalNutrients, "FAT"));
+            double carbohydrates = roundToTwoDecimals(getNutrientValue(totalNutrients, "CHOCDF"));
+            double fiber = roundToTwoDecimals(getNutrientValue(totalNutrients, "FIBTG"));
+            double sugar = roundToTwoDecimals(getNutrientValue(totalNutrients, "SUGAR"));
 
             // Extract additional nutrients (vitamins, minerals, etc.)
             Map<String, Double> additionalNutrients = new HashMap<>();
             for (String key : totalNutrients.keySet()) {
                 JSONObject nutrient = totalNutrients.getJSONObject(key);
                 String label = nutrient.getString("label");
-                double quantity = nutrient.getDouble("quantity");
+                double quantity = roundToTwoDecimals(nutrient.getDouble("quantity"));
                 String unit = nutrient.getString("unit");
                 additionalNutrients.put(label + " (" + unit + ")", quantity);
             }
@@ -198,5 +198,15 @@ public class EdamamAPI {
             return nutrient.getDouble("quantity");
         }
         return 0.0;
+    }
+
+    /**
+     * Helper method to round a value to two decimal places.
+     *
+     * @param value The value to round.
+     * @return The rounded value.
+     */
+    private static double roundToTwoDecimals(double value) {
+        return Math.round(value * 100.0) / 100.0;
     }
 }
