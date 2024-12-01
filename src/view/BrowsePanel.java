@@ -3,13 +3,14 @@ package view;
 import data_access.EdamamAPI;
 import entity.NutritionInfo;
 import entity.Recipe;
+import interface_adapter.searchRecipe.tagController;
+import use_case.searchRecipe.tagInteractor;
 
 import javax.swing.*;
 import java.awt.*;
 import java.net.URI;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Objects;
 
 public class BrowsePanel extends JPanel {
     private JTextField searchField;
@@ -22,7 +23,12 @@ public class BrowsePanel extends JPanel {
     private List<Recipe> recipes;
     private SaveRecipeHandler saveRecipeHandler;
 
+    private final interface_adapter.searchRecipe.tagController tagController;
+
     public BrowsePanel() {
+        tagInteractor interactor = new tagInteractor(new EdamamAPI());
+        this.tagController = new tagController(interactor);
+
         setLayout(new BorderLayout());
 
         // Top panel for search input and filters
@@ -30,7 +36,7 @@ public class BrowsePanel extends JPanel {
         topPanel.setLayout(new FlowLayout());
 
         searchField = new JTextField(20);
-        tagFilterButton.addActionListener(e -> selection());
+        tagFilterButton.addActionListener(e -> tagSelection());
 
 
         resultsFilter = new JComboBox<>(new Integer[]{5, 10, 20});
@@ -57,76 +63,43 @@ public class BrowsePanel extends JPanel {
         searchButton.addActionListener(e -> performSearch());
     }
 
-    private void selection() {
-        String[] tags = {"All", "alcohol-cocktail", "alcohol-free", "celery-free",
-                "crustacean-free", "dairy-free", "egg-free", "fish-free", "fodmap-free", "gluten-free",
-                "immuno-supportive", "keto-friendly", "kidney-friendly", "kosher", "low-fat-abs", "low-potassium",
-                "low-sugar", "lupine-free", "Mediterranean", "mollusk-free", "mustard-free", "no-oil-added", "paleo",
-                "peanut-free", "pescatarian", "pork-free", "red-meat-free", "sesame-free", "shellfish-free", "soy-free",
-                "sugar-conscious", "sulfite-free", "tree-nut-free", "vegan", "vegetarian", "wheat-free"};
-
-        // Create checkboxes for tags
-        JPanel checkboxPanel = new JPanel(new GridLayout(tags.length, 1));
-        JCheckBox[] checkBoxes = new JCheckBox[tags.length];
-
-        for (int i = 0; i < tags.length; i++) {
-            checkBoxes[i] = new JCheckBox(tags[i]);
-            checkBoxes[i].setSelected(selectedTags.contains(tags[i]));
-            checkboxPanel.add(checkBoxes[i]);
-        }
-
-        int result = JOptionPane.showConfirmDialog(
-                this,
-                new JScrollPane(checkboxPanel),
-                "Select Tags",
-                JOptionPane.OK_CANCEL_OPTION
-        );
-
-        if (result == JOptionPane.OK_OPTION) {
-            selectedTags.clear();
-            for (JCheckBox checkBox : checkBoxes) {
-                if (checkBox.isSelected()) {
-                    selectedTags.add(checkBox.getText());
+    private void tagSelection() {
+        List<String> availableTags = tagController.getAvailableTags();
+        tagSelectionView dialog = new tagSelectionView(
+                (Frame) SwingUtilities.getWindowAncestor(this),
+                availableTags,
+                selectedTags,
+                tags -> {
+                    // Callback: Update selectedTags and tagFilterButton label
+                    this.selectedTags = tags;
+                    String buttonText = selectedTags.isEmpty()
+                            ? "Select Tags"
+                            : String.join(", ", selectedTags.subList(0, Math.min(selectedTags.size(), 3)))
+                            + (selectedTags.size() > 3 ? "..." : "");
+                    tagFilterButton.setText(buttonText);
                 }
-            }
-
-            String buttonText = selectedTags.isEmpty()
-                    ? "Select Tags"
-                    : String.join(", ", selectedTags.subList(0, Math.min(selectedTags.size(), 3)))
-                    + (selectedTags.size() > 3 ? "..." : "");
-            tagFilterButton.setText(buttonText);
-        }
+        );
+        dialog.setVisible(true);
     }
+
 
     private void performSearch() {
         String keyword = searchField.getText().trim();
-        String tag = String.join(", ", selectedTags);
-        StringBuilder tags = new StringBuilder();
-
         if (keyword.isEmpty()) {
             JOptionPane.showMessageDialog(this, "Keyword cannot be empty.");
             return;
-        }
-        if (Objects.equals(tag, "All")) {
-            tags.append("&health=DASH");
-        }
-        else {
-            for (int i = 0; i < selectedTags.size(); i++) {
-                if (tags.length() > 0) {
-                    tags.append("&");
-                }
-                tags.append("health=").append(selectedTags.get(i));
-            }
         }
 
         int maxResults = (int) resultsFilter.getSelectedItem();
 
         try {
-            resultPanel.removeAll();
-            recipes = EdamamAPI.searchRecipes(keyword, maxResults, tags);
+            // Fetch recipes via TagController
+            List<Recipe> recipes = tagController.fetchRecipes(keyword, maxResults, selectedTags);
 
+            // Update the result panel
+            resultPanel.removeAll();
             if (recipes.isEmpty()) {
-                JOptionPane.showMessageDialog(this, "No recipes found for the given keyword and tag.");
+                JOptionPane.showMessageDialog(this, "No recipes found for the given keyword and tags.");
                 return;
             }
 
@@ -223,9 +196,8 @@ public class BrowsePanel extends JPanel {
         dialog.setLocationRelativeTo(this);
         dialog.setVisible(true);
     }
-
     public interface SaveRecipeHandler {
-        void save(Recipe recipe);
+    void save(Recipe recipe);
     }
 
     public void setSaveRecipeHandler(SaveRecipeHandler handler) {
