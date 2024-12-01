@@ -5,6 +5,7 @@ import data_access.tagsAvailble;
 import entity.Recipe;
 
 import java.util.List;
+import java.util.Objects;
 
 public class tagInteractor {
     private final EdamamAPI api;
@@ -20,11 +21,17 @@ public class tagInteractor {
 
     public String buildTagQuery(List<String> selectedTags) {
         StringBuilder tagQuery = new StringBuilder();
-        for (String tag : selectedTags) {
-            if (tagQuery.length() > 0) {
-                tagQuery.append("&");
+
+        if (selectedTags.contains("None")) {
+            tagQuery.append("&health=DASH");
+        }
+        else {
+            for (String tag : selectedTags) {
+                if (tagQuery.length() > 0) {
+                    tagQuery.append("&");
+                }
+                tagQuery.append("health=").append(tag);
             }
-            tagQuery.append("health=").append(tag);
         }
         return tagQuery.toString();
     }
