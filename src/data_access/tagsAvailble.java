@@ -5,7 +5,7 @@ import java.util.List;
 
 public class tagsAvailble {
     public static final List<String> AVAILABLE_TAGS = Arrays.asList(
-            "All", "alcohol-cocktail", "alcohol-free", "celery-free",
+            "None", "alcohol-cocktail", "alcohol-free", "celery-free",
             "crustacean-free", "dairy-free", "egg-free", "fish-free", "fodmap-free", "gluten-free",
             "immuno-supportive", "keto-friendly", "kidney-friendly", "kosher", "low-fat-abs", "low-potassium",
             "low-sugar", "lupine-free", "Mediterranean", "mollusk-free", "mustard-free", "no-oil-added", "paleo",
