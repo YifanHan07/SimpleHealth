@@ -3,6 +3,8 @@ package view;
 import data_access.EdamamAPI;
 import entity.NutritionInfo;
 import entity.Recipe;
+import interface_adapter.mealplaner.MealPlannerController;
+import interface_adapter.mealplaner.SaveRecipeController;
 import interface_adapter.searchRecipe.tagController;
 import use_case.searchRecipe.tagInteractor;
 
@@ -21,11 +23,16 @@ public class BrowsePanel extends JPanel {
     private List<String> selectedTags = new ArrayList<>();
 
     private List<Recipe> recipes;
+
+    private final tagController tagController;
+    private final SaveRecipeController saveRecipeController;
+    private final MealPlannerController mealPlannerController;
     private SaveRecipeHandler saveRecipeHandler;
 
-    private final interface_adapter.searchRecipe.tagController tagController;
+    public BrowsePanel(SaveRecipeController saveRecipeController, MealPlannerController mealPlannerController) {
+        this.saveRecipeController = saveRecipeController;
+        this.mealPlannerController = mealPlannerController;
 
-    public BrowsePanel() {
         tagInteractor interactor = new tagInteractor(new EdamamAPI());
         this.tagController = new tagController(interactor);
 
@@ -37,7 +44,6 @@ public class BrowsePanel extends JPanel {
 
         searchField = new JTextField(20);
         tagFilterButton.addActionListener(e -> tagSelection());
-
 
         resultsFilter = new JComboBox<>(new Integer[]{5, 10, 20});
         resultsFilter.setSelectedItem(10);
@@ -70,7 +76,6 @@ public class BrowsePanel extends JPanel {
                 availableTags,
                 selectedTags,
                 tags -> {
-                    // Callback: Update selectedTags and tagFilterButton label
                     this.selectedTags = tags;
                     String buttonText = selectedTags.isEmpty()
                             ? "Select Tags"
@@ -82,7 +87,6 @@ public class BrowsePanel extends JPanel {
         dialog.setVisible(true);
     }
 
-
     private void performSearch() {
         String keyword = searchField.getText().trim();
         if (keyword.isEmpty()) {
@@ -93,10 +97,8 @@ public class BrowsePanel extends JPanel {
         int maxResults = (int) resultsFilter.getSelectedItem();
 
         try {
-            // Fetch recipes via TagController
             List<Recipe> recipes = tagController.fetchRecipes(keyword, maxResults, selectedTags);
 
-            // Update the result panel
             resultPanel.removeAll();
             if (recipes.isEmpty()) {
                 JOptionPane.showMessageDialog(this, "No recipes found for the given keyword and tags.");
@@ -118,13 +120,12 @@ public class BrowsePanel extends JPanel {
         JPanel recipeItemPanel = new JPanel(new BorderLayout());
         JLabel titleLabel = new JLabel(recipe.getLabel());
 
-        // "Save" Button
-        JButton saveButton = new JButton("Save");
+        // "Save to Collection" Button
+        JButton saveButton = new JButton("Save to Collection");
         saveButton.addActionListener(e -> {
-            if (saveRecipeHandler != null) {
-                saveRecipeHandler.save(recipe);
-                JOptionPane.showMessageDialog(this, recipe.getLabel() + " saved to Collection.");
-            }
+            System.out.println("Save button clicked for recipe: " + recipe.getLabel());
+            saveRecipeHandler.save(recipe);
+            JOptionPane.showMessageDialog(this, recipe.getLabel() + " saved to collection.");
         });
 
         // "View Detail" Button
@@ -177,14 +178,16 @@ public class BrowsePanel extends JPanel {
             detailsPanel.add(new JLabel("<html><b>Fiber:</b> " + nutritionInfo.getFiber() + " g</html>"));
             detailsPanel.add(new JLabel("<html><b>Sugar:</b> " + nutritionInfo.getSugar() + " g</html>"));
 
-            // Additional nutrients
-            detailsPanel.add(new JLabel("<html><b>Other Nutrition:</b></html>"));
-            nutritionInfo.getAdditionalNutrients().forEach((key, value) -> {
-                detailsPanel.add(new JLabel("<html>" + key + ": " + value + "</html>"));
-            });
+            // Additional nutrients (Other Nutrition)
+            if (!nutritionInfo.getAdditionalNutrients().isEmpty()) {
+                detailsPanel.add(new JLabel("<html><b>Other Nutrition:</b></html>"));
+                nutritionInfo.getAdditionalNutrients().forEach((key, value) -> {
+                    detailsPanel.add(new JLabel("<html>" + key + ": " + value + "</html>"));
+                });
+            }
 
         } catch (Exception ex) {
-            detailsPanel.add(new JLabel("Error fetching nutrition info: " + ex.getMessage()));
+            detailsPanel.add(new JLabel("<html><b>Error fetching nutrition info:</b> " + ex.getMessage() + "</html>"));
         }
 
         JButton okButton = new JButton("OK");
@@ -196,11 +199,13 @@ public class BrowsePanel extends JPanel {
         dialog.setLocationRelativeTo(this);
         dialog.setVisible(true);
     }
-    public interface SaveRecipeHandler {
-    void save(Recipe recipe);
-    }
 
     public void setSaveRecipeHandler(SaveRecipeHandler handler) {
         this.saveRecipeHandler = handler;
+    }
+
+    @FunctionalInterface
+    public interface SaveRecipeHandler {
+        void save(Recipe recipe);
     }
 }
