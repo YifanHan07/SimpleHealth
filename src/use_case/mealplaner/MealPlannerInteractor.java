@@ -37,9 +37,9 @@ public class MealPlannerInteractor {
         if (mealPlan.contains(recipe)) {
             mealPlan.remove(recipe);
             totalCalories -= recipe.getCalories();
-            totalFat = roundToTwoDecimals(totalFat - recipe.getFat()); // Subtract and round fat
-            totalFiber = roundToTwoDecimals(totalFiber - recipe.getFiber()); // Subtract and round fiber
-            totalSugar = roundToTwoDecimals(totalSugar - recipe.getSugar()); // Subtract and round sugar
+            totalFat = roundToTwoDecimals(totalFat - recipe.getFat());
+            totalFiber = roundToTwoDecimals(totalFiber - recipe.getFiber());
+            totalSugar = roundToTwoDecimals(totalSugar - recipe.getSugar());
         }
     }
 
