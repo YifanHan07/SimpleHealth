@@ -1,11 +1,10 @@
 package use_case.searchRecipe;
 
 import data_access.EdamamAPI;
-import data_access.tagsAvailble;
+import data_access.TagsAvailable;
 import entity.Recipe;
 
 import java.util.List;
-import java.util.Objects;
 
 public class tagInteractor {
     private final EdamamAPI api;
@@ -16,7 +15,7 @@ public class tagInteractor {
 
     public List<String> fetchAvailableTags() {
         // Use the static list of tags
-        return tagsAvailble.AVAILABLE_TAGS;
+        return TagsAvailable.AVAILABLE_TAGS;
     }
 
     public String buildTagQuery(List<String> selectedTags) {
