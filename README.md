@@ -5,66 +5,24 @@ Github username: Z-Grace, YifanHan07, ChristianFisla, Safariiiiiiiii, hamzahudhu
 
 ## Use cases for each user story
 ### User Story 1 - Account Creation
-Description: Creates a personal account.  
-User Interaction: User enters details and submit the details to create an account.  
-Controller: AccountController handles the click made by the user and makes decisions on how to start the account creation by calling AccountCreationInteractor.  
-Interactor: AccountCreationInteractor processes on creating an account by checking if the inputs are valid.  
-Presenter: AccountPresenter displays a success confirmation message.
+"As a user, I want to create an account by providing my username, password, dietary preferences, and allergies so that I can personalize my experience with the app."
 
-### User Story 2 - Recipe Browsing
-Description: User browsing recipes by searching keywords.  
-User Interaction: User types a keyword into the search field and presses “Search”.  
-Controller: RecipeSearchController handles the input inputted by the user and passes the keyword to the RecipeSearchInteractor.  
-Interactor: RecipeSearchInteractor filters the recipes based on the entered keyword, after checking the API, if no matching recipes are found, an empty result is returned.  
-Presenter: RecipePresenter displays the list of the recipes based on the entered keyword or an error message.  
+### User Story 2: Account Information
+"As a user, I want to view and update my account details, including my dietary preferences and allergies, so that I can keep my profile up-to-date and relevant."
 
-### User Stor 3：Save recipe to personal collection  
+### User Story 3: Recipe Browsing
+"As a user, I want to browse a variety of recipes available in the app so that I can explore new meal options based on my preferences."
 
-Description: Saving the selected recipe to the user’s collection.  
+### User Story 4: Search Recipe by Health Labels
+"As a user, I want to filter recipes based on health labels so that I can quickly find meals that meet my dietary needs."
 
-User Interaction: The user wants to save recipes to his personal collection so that he can easily access his favorite meals.  
-
-Controller: In the file SaveRecipeController, handles the “Save to Collection” button clicked by user   
-
-Presenter: In the file SaveRecipePresenter, If the recipe is successfully added to the collection, displays a message saying “Successfully added to collection.”  
-
-Interactor: In the file SaveRecipeInteractor, receives the recipe the user wants to save and adds it to the user’s collection list   
-
-
-
-### User Story 4: Combine Meals for Nutritional Summary  
-
-Description: combine multiple recipes and show the total nutrition values.  
-
-User Interaction: The user combines multiple recipes in a day to view the total nutritional information, ensuring her daily intake meets her dietary requirements.  
-
-Controller: In the file CombineMealsController, handles the “Combine Meals” button clicked by user  
-
-Presenter: In the file CombineMealsPresenter, formats and presents the nutritional summary.  
-
-Interactor: In the file CombineMealsInteractor, calculates the total nutrition for selected recipes,, such as calories, protein, fat, etc.  
-
-
-
-
-
-### User Story 4 - Search Recipes by Health Label   
-
-Description: Enable users to filter recipes by health labels.  
-User Interaction:search for recipes based on specific nutritional criteria (e.g., vegan, wheat-free) to find meals that fit her health goals.  
-Controller: TagController handles the input inputted by the user and passes the keyword to the TagInteractor.  
-Interactor: TagInteractor searches for recipes by specified health label by calling the API.  
-View:  TagSelectionView displays the avaliable and selected tags.  
-
+### User Story 5: Recipe and Nutrition Detail
+"As a user, I want to view the detailed nutritional information for each recipe so that I can make informed decisions about what I eat."
 
 ### User Story 6: Save and Combine Meals for Nutritional Summary
+"As a user, I want to save recipes and combine meals into a daily or weekly plan so that I can track and summarize my nutritional intake."
 
-Description:  Save and Combine meals for nutrition sammary
-User Interaction: The user wants to save the recipe they want , and know how many nutrition thay will have if they choose these recipes for a day
-Controller: In the file SaveRecipeController, handles user save a recipe.  
-            In the file MealPlannerController, handles user select mutiple recipes and see the summary of nutrition.  
-Interactor: In the file SaveRecipeInteractor, retrieves and processes save recipe action.
-            In the file SaveRecipeInteractor, retrieves and processes select multiple recipes in collection and calculate the nutrition summary action.
+
 
 
 
