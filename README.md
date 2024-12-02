@@ -5,20 +5,40 @@ Github username: Z-Grace, YifanHan07, ChristianFisla, Safariiiiiiiii, hamzahudhu
 
 ## Use cases for each user story
 ### User Story 1 - Account Creation
-Description: Creates a personal account.  
-User Interaction: User enters details and submit the details to create an account.  
+Description: "I want to create a personal account, so that I can save and manage my favorite recipes".
+
+User Interaction: User enters login details and submit the details to create an account.  
+
 Controller: AccountController handles the click made by the user and makes decisions on how to start the account creation by calling AccountCreationInteractor.  
+
 Interactor: AccountCreationInteractor processes on creating an account by checking if the inputs are valid.  
+
 Presenter: AccountPresenter displays a success confirmation message.
 
-### User Story 2 - Recipe Browsing
+### User Story 2：Account Information
+
+Description: "I want to manage my account details and edit my preferences".
+
+User Interaction: AccountController handles the button clicks and saves the edits of the user.
+
+Controller: In the file SaveRecipeController, handles the “Save to Collection” button clicked by user
+
+Presenter: In the file SaveRecipePresenter, If the recipe is successfully added to the collection, displays a message saying “Successfully added to collection.”
+
+Interactor: In the file SaveRecipeInteractor, rec
+
+### User Story 3 - Recipe Browsing
 Description: User browsing recipes by searching keywords.  
-User Interaction: User types a keyword into the search field and presses “Search”.  
+
+User Interaction: User types a keyword into the search field and presses “Search”.
+
 Controller: RecipeSearchController handles the input inputted by the user and passes the keyword to the RecipeSearchInteractor.  
-Interactor: RecipeSearchInteractor filters the recipes based on the entered keyword, after checking the API, if no matching recipes are found, an empty result is returned.  
+
+Interactor: RecipeSearchInteractor filters the recipes based on the entered keyword, after checking the API, if no matching recipes are found, an empty result is returned. 
+
 Presenter: RecipePresenter displays the list of the recipes based on the entered keyword or an error message.  
 
-### User Stor 3：Save recipe to personal collection  
+### User Story 3：Save recipe to personal collection 
 
 Description: Saving the selected recipe to the user’s collection.  
 
