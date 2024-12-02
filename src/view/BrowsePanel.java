@@ -153,7 +153,7 @@ public class BrowsePanel extends JPanel {
         detailsPanel.add(new JLabel("<html><h3>" + recipe.getLabel() + "</h3></html>"));
 
         // Add Recipe URL
-        JLabel urlLabel = new JLabel("<html><a href='" + recipe.getUrl() + "'>View Full Recipe</a></html>");
+        JLabel urlLabel = new JLabel("<html><a href='" + recipe.getUrl() + "'>View Recipe Online</a></html>");
         urlLabel.setCursor(Cursor.getPredefinedCursor(Cursor.HAND_CURSOR));
         urlLabel.addMouseListener(new java.awt.event.MouseAdapter() {
             @Override
