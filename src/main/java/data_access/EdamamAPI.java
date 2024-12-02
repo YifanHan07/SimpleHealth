@@ -34,16 +34,21 @@ public class EdamamAPI {
      *
      * @param query      Search keyword (e.g., "Pasta").
      * @param maxResults Maximum number of recipes to fetch.
-     * @param tagQuery        Optional health filter (e.g., "gluten-free"). Use "All" for no filter.
+     * @param tag        Optional health filter (e.g., "gluten-free"). Use "All" for no filter.
      * @return A list of Recipe objects.
      * @throws Exception If API call fails or response is invalid.
      */
-    public static List<Recipe> searchRecipes(String query, int maxResults, StringBuilder tagQuery) throws Exception {
+    public static List<Recipe> searchRecipes(String query, int maxResults, String tag) throws Exception {
         // Construct base API URL
         String apiUrl = String.format(
-                "https://api.edamam.com/api/recipes/v2?type=public&q=%s&app_id=%s&app_key=%s&from=0&to=%d&%s",
-                java.net.URLEncoder.encode(query, "UTF-8"), APP_ID, APP_KEY, maxResults, tagQuery.toString()
+                "https://api.edamam.com/api/recipes/v2?type=public&q=%s&app_id=%s&app_key=%s&from=0&to=%d",
+                java.net.URLEncoder.encode(query, "UTF-8"), APP_ID, APP_KEY, maxResults
         );
+
+        // Append health parameter only if tag is not "All"
+        if (!tag.equalsIgnoreCase("All") && !tag.trim().isEmpty()) {
+            apiUrl += "&health=" + java.net.URLEncoder.encode(tag, "UTF-8");
+        }
 
         // Send GET request
         URL url = new URL(apiUrl);
@@ -72,13 +77,6 @@ public class EdamamAPI {
                 String label = recipeJson.getString("label");
                 String urlStr = recipeJson.getString("url");
                 double calories = roundToTwoDecimals(recipeJson.getDouble("calories")); // Round to 2 decimals
-
-                // Extract fat, fiber, sugar if available
-                JSONObject totalNutrients = recipeJson.getJSONObject("totalNutrients");
-                double fat = roundToTwoDecimals(getNutrientValue(totalNutrients, "FAT"));
-                double fiber = roundToTwoDecimals(getNutrientValue(totalNutrients, "FIBTG"));
-                double sugar = roundToTwoDecimals(getNutrientValue(totalNutrients, "SUGAR"));
-
                 JSONArray ingredientsArray = recipeJson.getJSONArray("ingredientLines");
 
                 // Convert JSONArray to List<String>
@@ -88,7 +86,7 @@ public class EdamamAPI {
                 }
 
                 // Create Recipe object and add to list
-                Recipe recipe = new Recipe(label, urlStr, calories, fat, fiber, sugar, ingredientLines);
+                Recipe recipe = new Recipe(label, urlStr, calories, ingredientLines);
                 recipeList.add(recipe);
             }
             return recipeList;
@@ -105,7 +103,6 @@ public class EdamamAPI {
             throw new Exception("GET request failed. HTTP Code: " + responseCode + ". Error: " + errorResponse);
         }
     }
-
 
     /**
      * Fetches detailed nutrition facts for a given list of ingredients.
