@@ -48,17 +48,13 @@ Interactor: In the file CombineMealsInteractor, calculates the total nutrition f
 
 
 
-### User Story 5: Search Recipes by Nutritional Criteria  
+### User Story 5: Search Recipes by Health Label   
 
-Description: Enable users to filter recipes by nutritional criteria.  
-
-User Interaction:search for recipes based on specific nutritional criteria (e.g., low calorie, high protein) to find meals that fit her health goals.  
-
-Controller: In the file NutritionalSearchController, manages the “search” button interaction.  
-
-Presenter:  In the file, NutritionalSearchPresenter, displays the search results.  
-
-Interactor: In the file, NutritionalSearchInteractor, searches for recipes by specified nutritional criteria.  
+Description: Enable users to filter recipes by health labels.  
+User Interaction:search for recipes based on specific nutritional criteria (e.g., vegan, wheat-free) to find meals that fit her health goals.  
+Controller: TagController handles the input inputted by the user and passes the keyword to the TagInteractor.  
+Interactor: TagInteractor searches for recipes by specified health label by calling the API.  
+View:  TagSelectionView displays the avaliable and selected tags.  
 
 
 
