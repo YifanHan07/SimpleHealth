@@ -72,6 +72,13 @@ public class EdamamAPI {
                 String label = recipeJson.getString("label");
                 String urlStr = recipeJson.getString("url");
                 double calories = roundToTwoDecimals(recipeJson.getDouble("calories")); // Round to 2 decimals
+
+                // Extract fat, fiber, sugar if available
+                JSONObject totalNutrients = recipeJson.getJSONObject("totalNutrients");
+                double fat = roundToTwoDecimals(getNutrientValue(totalNutrients, "FAT"));
+                double fiber = roundToTwoDecimals(getNutrientValue(totalNutrients, "FIBTG"));
+                double sugar = roundToTwoDecimals(getNutrientValue(totalNutrients, "SUGAR"));
+
                 JSONArray ingredientsArray = recipeJson.getJSONArray("ingredientLines");
 
                 // Convert JSONArray to List<String>
@@ -81,7 +88,7 @@ public class EdamamAPI {
                 }
 
                 // Create Recipe object and add to list
-                Recipe recipe = new Recipe(label, urlStr, calories, ingredientLines);
+                Recipe recipe = new Recipe(label, urlStr, calories, fat, fiber, sugar, ingredientLines);
                 recipeList.add(recipe);
             }
             return recipeList;
@@ -98,6 +105,7 @@ public class EdamamAPI {
             throw new Exception("GET request failed. HTTP Code: " + responseCode + ". Error: " + errorResponse);
         }
     }
+
 
     /**
      * Fetches detailed nutrition facts for a given list of ingredients.
