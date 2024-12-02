@@ -1,4 +1,4 @@
-package app;
+import app.AppBuilder;
 
 import javax.swing.JFrame;
 
