@@ -125,7 +125,6 @@ public class BrowsePanel extends JPanel {
         saveButton.addActionListener(e -> {
             System.out.println("Save button clicked for recipe: " + recipe.getLabel());
             saveRecipeHandler.save(recipe);
-            JOptionPane.showMessageDialog(this, recipe.getLabel() + " saved to collection.");
         });
 
         // "View Detail" Button
@@ -140,6 +139,7 @@ public class BrowsePanel extends JPanel {
         recipeItemPanel.add(buttonPanel, BorderLayout.EAST);
         return recipeItemPanel;
     }
+
 
     private void showRecipeDetails(Recipe recipe) {
         JDialog dialog = new JDialog((JFrame) SwingUtilities.getWindowAncestor(this), "Recipe Details", true);
