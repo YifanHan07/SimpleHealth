@@ -57,21 +57,15 @@ Interactor: TagInteractor searches for recipes by specified health label by call
 View:  TagSelectionView displays the avaliable and selected tags.  
 
 
+### User Story 6: Save and Combine Meals for Nutritional Summary
 
+Description:  Save and Combine meals for nutrition sammary
+User Interaction: The user wants to save the recipe they want , and know how many nutrition thay will have if they choose these recipes for a day
+Controller: In the file SaveRecipeController, handles user save a recipe.  
+            In the file MealPlannerController, handles user select mutiple recipes and see the summary of nutrition.  
+Interactor: In the file SaveRecipeInteractor, retrieves and processes save recipe action.
+            In the file SaveRecipeInteractor, retrieves and processes select multiple recipes in collection and calculate the nutrition summary action.
 
-
-
-### User Story 6: View detailed nutrition information  
-
-Description:  Provide detailed nutritional information for a selected recipe.  
-
-User Interaction: The user wants to view detailed nutritional information for each recipe to make informed meal choices.  
-
-Controller: In the file ViewNutritionDetailsController, handles user selection of a recipe.  
-
-Presenter: In the file ViewNutritionDetailsPresenter,  formats and displays the nutritional information.  
-
-Interactor: In the file ViewNutritionDetailsInteractor, retrieves and processes the nutritional details of a selected recipe.
 
 
 
