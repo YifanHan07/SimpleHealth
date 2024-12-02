@@ -5,6 +5,9 @@ import entity.Recipe;
 import java.util.ArrayList;
 import java.util.List;
 
+import java.math.BigDecimal;
+import java.math.RoundingMode;
+
 public class MealPlannerInteractor {
     private final List<Recipe> mealPlan; // List of recipes in the meal plan
     private int totalCalories; // Total calories
@@ -15,18 +18,18 @@ public class MealPlannerInteractor {
     public MealPlannerInteractor() {
         this.mealPlan = new ArrayList<>();
         this.totalCalories = 0;
-        this.totalFat = 0;
-        this.totalFiber = 0;
-        this.totalSugar = 0;
+        this.totalFat = 0.0;
+        this.totalFiber = 0.0;
+        this.totalSugar = 0.0;
     }
 
     public void addRecipeToMealPlan(Recipe recipe) {
         if (!mealPlan.contains(recipe)) {
             mealPlan.add(recipe);
             totalCalories += recipe.getCalories();
-            totalFat += recipe.getFat();      // Add fat
-            totalFiber += recipe.getFiber();  // Add fiber
-            totalSugar += recipe.getSugar();  // Add sugar
+            totalFat = roundToTwoDecimals(totalFat + recipe.getFat()); // Add and round fat
+            totalFiber = roundToTwoDecimals(totalFiber + recipe.getFiber()); // Add and round fiber
+            totalSugar = roundToTwoDecimals(totalSugar + recipe.getSugar()); // Add and round sugar
         }
     }
 
@@ -34,9 +37,9 @@ public class MealPlannerInteractor {
         if (mealPlan.contains(recipe)) {
             mealPlan.remove(recipe);
             totalCalories -= recipe.getCalories();
-            totalFat -= recipe.getFat();      // Remove fat
-            totalFiber -= recipe.getFiber();  // Remove fiber
-            totalSugar -= recipe.getSugar();  // Remove sugar
+            totalFat = roundToTwoDecimals(totalFat - recipe.getFat()); // Subtract and round fat
+            totalFiber = roundToTwoDecimals(totalFiber - recipe.getFiber()); // Subtract and round fiber
+            totalSugar = roundToTwoDecimals(totalSugar - recipe.getSugar()); // Subtract and round sugar
         }
     }
 
@@ -58,5 +61,11 @@ public class MealPlannerInteractor {
 
     public double getTotalSugar() {
         return totalSugar;
+    }
+
+    private double roundToTwoDecimals(double value) {
+        BigDecimal bd = BigDecimal.valueOf(value);
+        bd = bd.setScale(2, RoundingMode.HALF_UP); // Round to 2 decimal places
+        return bd.doubleValue();
     }
 }
