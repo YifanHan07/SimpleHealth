@@ -3,23 +3,39 @@ package view;
 import data_access.EdamamAPI;
 import entity.NutritionInfo;
 import entity.Recipe;
+import interface_adapter.mealplaner.MealPlannerController;
+import interface_adapter.mealplaner.SaveRecipeController;
+import interface_adapter.searchRecipe.tagController;
+import use_case.searchRecipe.tagInteractor;
 
 import javax.swing.*;
 import java.awt.*;
 import java.net.URI;
+import java.util.ArrayList;
 import java.util.List;
 
 public class BrowsePanel extends JPanel {
     private JTextField searchField;
-    private JComboBox<String> tagFilter;
     private JComboBox<Integer> resultsFilter;
     private JButton searchButton;
     private JPanel resultPanel;
+    private JButton tagFilterButton = new JButton("Select Tags");
+    private List<String> selectedTags = new ArrayList<>();
 
     private List<Recipe> recipes;
+
+    private final tagController tagController;
+    private final SaveRecipeController saveRecipeController;
+    private final MealPlannerController mealPlannerController;
     private SaveRecipeHandler saveRecipeHandler;
 
-    public BrowsePanel() {
+    public BrowsePanel(SaveRecipeController saveRecipeController, MealPlannerController mealPlannerController) {
+        this.saveRecipeController = saveRecipeController;
+        this.mealPlannerController = mealPlannerController;
+
+        tagInteractor interactor = new tagInteractor(new EdamamAPI());
+        this.tagController = new tagController(interactor);
+
         setLayout(new BorderLayout());
 
         // Top panel for search input and filters
@@ -27,10 +43,7 @@ public class BrowsePanel extends JPanel {
         topPanel.setLayout(new FlowLayout());
 
         searchField = new JTextField(20);
-
-        tagFilter = new JComboBox<>(new String[]{
-                "All", "gluten-free", "vegan", "vegetarian", "keto-friendly", "low-sugar", "low-fat-abs"
-        });
+        tagFilterButton.addActionListener(e -> tagSelection());
 
         resultsFilter = new JComboBox<>(new Integer[]{5, 10, 20});
         resultsFilter.setSelectedItem(10);
@@ -41,7 +54,7 @@ public class BrowsePanel extends JPanel {
         topPanel.add(new JLabel("Keyword:"));
         topPanel.add(searchField);
         topPanel.add(new JLabel("Tag:"));
-        topPanel.add(tagFilter);
+        topPanel.add(tagFilterButton);
         topPanel.add(new JLabel("Results:"));
         topPanel.add(resultsFilter);
         topPanel.add(searchButton);
@@ -56,27 +69,39 @@ public class BrowsePanel extends JPanel {
         searchButton.addActionListener(e -> performSearch());
     }
 
+    private void tagSelection() {
+        List<String> availableTags = tagController.getAvailableTags();
+        tagSelectionView dialog = new tagSelectionView(
+                (Frame) SwingUtilities.getWindowAncestor(this),
+                availableTags,
+                selectedTags,
+                tags -> {
+                    this.selectedTags = tags;
+                    String buttonText = selectedTags.isEmpty()
+                            ? "Select Tags"
+                            : String.join(", ", selectedTags.subList(0, Math.min(selectedTags.size(), 3)))
+                            + (selectedTags.size() > 3 ? "..." : "");
+                    tagFilterButton.setText(buttonText);
+                }
+        );
+        dialog.setVisible(true);
+    }
+
     private void performSearch() {
         String keyword = searchField.getText().trim();
-        String tag = tagFilter.getSelectedItem().toString();
-
-        if (tag.equalsIgnoreCase("All")) {
-            tag = ""; // No health parameter
-        }
-
-        int maxResults = (int) resultsFilter.getSelectedItem();
-
         if (keyword.isEmpty()) {
             JOptionPane.showMessageDialog(this, "Keyword cannot be empty.");
             return;
         }
 
-        try {
-            resultPanel.removeAll();
-            recipes = EdamamAPI.searchRecipes(keyword, maxResults, tag);
+        int maxResults = (int) resultsFilter.getSelectedItem();
 
+        try {
+            List<Recipe> recipes = tagController.fetchRecipes(keyword, maxResults, selectedTags);
+
+            resultPanel.removeAll();
             if (recipes.isEmpty()) {
-                JOptionPane.showMessageDialog(this, "No recipes found for the given keyword and tag.");
+                JOptionPane.showMessageDialog(this, "No recipes found for the given keyword and tags.");
                 return;
             }
 
@@ -95,13 +120,11 @@ public class BrowsePanel extends JPanel {
         JPanel recipeItemPanel = new JPanel(new BorderLayout());
         JLabel titleLabel = new JLabel(recipe.getLabel());
 
-        // "Save" Button
-        JButton saveButton = new JButton("Save");
+        // "Save to Collection" Button
+        JButton saveButton = new JButton("Save to Collection");
         saveButton.addActionListener(e -> {
-            if (saveRecipeHandler != null) {
-                saveRecipeHandler.save(recipe);
-                JOptionPane.showMessageDialog(this, recipe.getLabel() + " saved to Collection.");
-            }
+            System.out.println("Save button clicked for recipe: " + recipe.getLabel());
+            saveRecipeHandler.save(recipe);
         });
 
         // "View Detail" Button
@@ -117,6 +140,7 @@ public class BrowsePanel extends JPanel {
         return recipeItemPanel;
     }
 
+
     private void showRecipeDetails(Recipe recipe) {
         JDialog dialog = new JDialog((JFrame) SwingUtilities.getWindowAncestor(this), "Recipe Details", true);
         dialog.setSize(500, 600);
@@ -129,7 +153,7 @@ public class BrowsePanel extends JPanel {
         detailsPanel.add(new JLabel("<html><h3>" + recipe.getLabel() + "</h3></html>"));
 
         // Add Recipe URL
-        JLabel urlLabel = new JLabel("<html><a href='" + recipe.getUrl() + "'>View Full Recipe</a></html>");
+        JLabel urlLabel = new JLabel("<html><a href='" + recipe.getUrl() + "'>View Recipe Online</a></html>");
         urlLabel.setCursor(Cursor.getPredefinedCursor(Cursor.HAND_CURSOR));
         urlLabel.addMouseListener(new java.awt.event.MouseAdapter() {
             @Override
@@ -154,14 +178,16 @@ public class BrowsePanel extends JPanel {
             detailsPanel.add(new JLabel("<html><b>Fiber:</b> " + nutritionInfo.getFiber() + " g</html>"));
             detailsPanel.add(new JLabel("<html><b>Sugar:</b> " + nutritionInfo.getSugar() + " g</html>"));
 
-            // Additional nutrients
-            detailsPanel.add(new JLabel("<html><b>Other Nutrition:</b></html>"));
-            nutritionInfo.getAdditionalNutrients().forEach((key, value) -> {
-                detailsPanel.add(new JLabel("<html>" + key + ": " + value + "</html>"));
-            });
+            // Additional nutrients (Other Nutrition)
+            if (!nutritionInfo.getAdditionalNutrients().isEmpty()) {
+                detailsPanel.add(new JLabel("<html><b>Other Nutrition:</b></html>"));
+                nutritionInfo.getAdditionalNutrients().forEach((key, value) -> {
+                    detailsPanel.add(new JLabel("<html>" + key + ": " + value + "</html>"));
+                });
+            }
 
         } catch (Exception ex) {
-            detailsPanel.add(new JLabel("Error fetching nutrition info: " + ex.getMessage()));
+            detailsPanel.add(new JLabel("<html><b>Error fetching nutrition info:</b> " + ex.getMessage() + "</html>"));
         }
 
         JButton okButton = new JButton("OK");
@@ -174,11 +200,12 @@ public class BrowsePanel extends JPanel {
         dialog.setVisible(true);
     }
 
-    public interface SaveRecipeHandler {
-        void save(Recipe recipe);
-    }
-
     public void setSaveRecipeHandler(SaveRecipeHandler handler) {
         this.saveRecipeHandler = handler;
+    }
+
+    @FunctionalInterface
+    public interface SaveRecipeHandler {
+        void save(Recipe recipe);
     }
 }
