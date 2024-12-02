@@ -105,7 +105,7 @@ public class CollectionPanel extends JPanel {
      * Displays the current meal plan, including recipes and their total calories.
      */
     private void openMealPlanner() {
-        List<Recipe> selectedRecipes = mealPlannerController.getMealPlan(); // Get the recipes in the meal plan
+        List<Recipe> selectedRecipes = mealPlannerController.getMealPlan();
         if (selectedRecipes.isEmpty()) {
             JOptionPane.showMessageDialog(this, "No recipes selected for Meal Planner.");
             return;
@@ -120,12 +120,19 @@ public class CollectionPanel extends JPanel {
         JPanel mealPlannerPanel = new JPanel();
         mealPlannerPanel.setLayout(new BoxLayout(mealPlannerPanel, BoxLayout.Y_AXIS));
 
-        int totalCalories = mealPlannerController.getTotalCalories(); // Get total calories
+        int totalCalories = mealPlannerController.getTotalCalories();
+        double totalFat = mealPlannerController.getTotalFat();
+        double totalFiber = mealPlannerController.getTotalFiber();
+        double totalSugar = mealPlannerController.getTotalSugar();
+
         StringBuilder details = new StringBuilder("<html><b>Selected Recipes:</b><br>");
         for (Recipe recipe : selectedRecipes) {
-            details.append("- ").append(recipe.getLabel()).append("<br>"); // List each recipe in the meal plan
+            details.append("- ").append(recipe.getLabel()).append("<br>");
         }
-        details.append("<br><b>Total Calories:</b> ").append(totalCalories).append(" kcal</html>");
+        details.append("<br><b>Total Calories:</b> ").append(totalCalories).append(" kcal<br>");
+        details.append("<b>Total Fat:</b> ").append(totalFat).append(" g<br>");
+        details.append("<b>Total Fiber:</b> ").append(totalFiber).append(" g<br>");
+        details.append("<b>Total Sugar:</b> ").append(totalSugar).append(" g</html>");
 
         JLabel mealDetailsLabel = new JLabel(details.toString());
         mealPlannerPanel.add(mealDetailsLabel);
@@ -140,5 +147,6 @@ public class CollectionPanel extends JPanel {
         mealPlannerDialog.setLocationRelativeTo(this);
         mealPlannerDialog.setVisible(true);
     }
+
 }
 

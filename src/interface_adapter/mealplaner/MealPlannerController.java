@@ -27,4 +27,16 @@ public class MealPlannerController {
     public int getTotalCalories() {
         return interactor.getTotalCalories();
     }
+
+    public double getTotalFat() {
+        return interactor.getTotalFat();
+    }
+
+    public double getTotalFiber() {
+        return interactor.getTotalFiber();
+    }
+
+    public double getTotalSugar() {
+        return interactor.getTotalSugar();
+    }
 }

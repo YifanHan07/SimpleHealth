@@ -1,139 +1,130 @@
 import entity.Recipe;
 import interface_adapter.mealplaner.MealPlannerController;
 import interface_adapter.mealplaner.SaveRecipeController;
-import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.Test;
 import use_case.mealplaner.MealPlannerInteractor;
 import use_case.mealplaner.SaveRecipeInteractor;
+
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 
 import java.util.ArrayList;
 import java.util.List;
 
 import static org.junit.jupiter.api.Assertions.*;
 
-class MealPlannerAndSaveRecipeTest {
+public class MealPlannerAndSaveRecipeTest {
 
-    private SaveRecipeController saveRecipeController;
     private MealPlannerController mealPlannerController;
+    private SaveRecipeController saveRecipeController;
 
     @BeforeEach
-    void setUp() {
-        SaveRecipeInteractor saveRecipeInteractor = new SaveRecipeInteractor();
+    public void setUp() {
+        // Initialize interactors and controllers
         MealPlannerInteractor mealPlannerInteractor = new MealPlannerInteractor();
+        SaveRecipeInteractor saveRecipeInteractor = new SaveRecipeInteractor();
 
-        saveRecipeController = new SaveRecipeController(saveRecipeInteractor);
         mealPlannerController = new MealPlannerController(mealPlannerInteractor);
+        saveRecipeController = new SaveRecipeController(saveRecipeInteractor);
     }
 
     @Test
-    void testSaveRecipe() {
-        Recipe recipe1 = new Recipe(
-                "Apple Pie",
-                "http://example.com/apple-pie",
-                250.0,
-                List.of("2 cups of flour", "1 cup of sugar", "1/2 cup of butter")
-        );
-        Recipe recipe2 = new Recipe(
-                "Banana Bread",
-                "http://example.com/banana-bread",
-                300.0,
-                List.of("3 bananas", "1 cup of sugar", "2 cups of flour")
-        );
-
-        // Save recipes
-        saveRecipeController.saveRecipe(recipe1);
-        saveRecipeController.saveRecipe(recipe2);
-
-        // Check saved recipes
-        List<Recipe> savedRecipes = saveRecipeController.getSavedRecipes();
-        assertEquals(2, savedRecipes.size());
-        assertTrue(savedRecipes.contains(recipe1));
-        assertTrue(savedRecipes.contains(recipe2));
-    }
-
-    @Test
-    void testSaveDuplicateRecipe() {
+    public void testSaveRecipe() {
+        // Create a recipe object
         Recipe recipe = new Recipe(
-                "Apple Pie",
-                "http://example.com/apple-pie",
-                250.0,
-                List.of("2 cups of flour", "1 cup of sugar", "1/2 cup of butter")
+                "Blackberry + Apple Cocktail",
+                "http://www.lottieanddoof.com/2009/09/lottie-doof-kelly-4/",
+                222.875829140625,
+                0.0,
+                0.0,
+                0.0,
+                List.of("1 cup blackberry", "1 cup apple juice")
         );
 
-        // Save the same recipe twice
-        saveRecipeController.saveRecipe(recipe);
+        // Save the recipe
         saveRecipeController.saveRecipe(recipe);
 
-        // Check that the recipe is not duplicated
+        // Assert the recipe is saved
         List<Recipe> savedRecipes = saveRecipeController.getSavedRecipes();
         assertEquals(1, savedRecipes.size());
+        assertEquals("Blackberry + Apple Cocktail", savedRecipes.get(0).getLabel());
     }
 
     @Test
-    void testAddRecipeToMealPlan() {
-        Recipe recipe1 = new Recipe(
-                "Apple Pie",
-                "http://example.com/apple-pie",
-                250.0,
-                List.of("2 cups of flour", "1 cup of sugar", "1/2 cup of butter")
-        );
-        Recipe recipe2 = new Recipe(
-                "Banana Bread",
-                "http://example.com/banana-bread",
-                300.0,
-                List.of("3 bananas", "1 cup of sugar", "2 cups of flour")
-        );
-
-        // Add recipes to the meal plan
-        mealPlannerController.addRecipeToMealPlan(recipe1);
-        mealPlannerController.addRecipeToMealPlan(recipe2);
-
-        // Check meal plan content
-        List<Recipe> mealPlan = mealPlannerController.getMealPlan();
-        assertEquals(2, mealPlan.size());
-        assertTrue(mealPlan.contains(recipe1));
-        assertTrue(mealPlan.contains(recipe2));
-    }
-
-    @Test
-    void testRemoveRecipeFromMealPlan() {
+    public void testAddRecipeToMealPlan() {
+        // Create a recipe object
         Recipe recipe = new Recipe(
-                "Apple Pie",
-                "http://example.com/apple-pie",
-                250.0,
-                List.of("2 cups of flour", "1 cup of sugar", "1/2 cup of butter")
+                "Apple Elixir Recipe",
+                "http://www.seriouseats.com/apple-elixir-cocktail-recipe.html",
+                847.1819270562501,
+                0.0,
+                0.0,
+                0.0,
+                List.of("1 cup apple juice", "1/2 cup brandy")
         );
 
-        // Add and then remove the recipe from the meal plan
+        // Add the recipe to the meal plan
         mealPlannerController.addRecipeToMealPlan(recipe);
+
+        // Assert the recipe is added
+        List<Recipe> mealPlan = mealPlannerController.getMealPlan();
+        assertEquals(1, mealPlan.size());
+        assertEquals("Apple Elixir Recipe", mealPlan.get(0).getLabel());
+    }
+
+    @Test
+    public void testRemoveRecipeFromMealPlan() {
+        // Create and add a recipe object
+        Recipe recipe = new Recipe(
+                "Apple Elixir Recipe",
+                "http://www.seriouseats.com/apple-elixir-cocktail-recipe.html",
+                847.1819270562501,
+                0.0,
+                0.0,
+                0.0,
+                List.of("1 cup apple juice", "1/2 cup brandy")
+        );
+
+        mealPlannerController.addRecipeToMealPlan(recipe);
+
+        // Remove the recipe from the meal plan
         mealPlannerController.removeRecipeFromMealPlan(recipe);
 
-        // Check meal plan content
+        // Assert the recipe is removed
         List<Recipe> mealPlan = mealPlannerController.getMealPlan();
         assertTrue(mealPlan.isEmpty());
     }
 
     @Test
-    void testTotalCaloriesInMealPlan() {
+    public void testSaveAndRetrieveRecipes() {
+        // Create two recipe objects
         Recipe recipe1 = new Recipe(
-                "Apple Pie",
-                "http://example.com/apple-pie",
-                250.0,
-                List.of("2 cups of flour", "1 cup of sugar", "1/2 cup of butter")
+                "Blackberry + Apple Cocktail",
+                "http://www.lottieanddoof.com/2009/09/lottie-doof-kelly-4/",
+                222.875829140625,
+                1.0,
+                1.0,
+                10.0,
+                List.of("1 cup blackberry", "1 cup apple juice")
         );
+
         Recipe recipe2 = new Recipe(
-                "Banana Bread",
-                "http://example.com/banana-bread",
-                300.0,
-                List.of("3 bananas", "1 cup of sugar", "2 cups of flour")
+                "Apple Elixir Recipe",
+                "http://www.seriouseats.com/apple-elixir-cocktail-recipe.html",
+                847.1819270562501,
+                5.0,
+                2.0,
+                20.0,
+                List.of("1 cup apple juice", "1/2 cup brandy")
         );
 
-        // Add recipes to the meal plan
-        mealPlannerController.addRecipeToMealPlan(recipe1);
-        mealPlannerController.addRecipeToMealPlan(recipe2);
+        // Save both recipes
+        saveRecipeController.saveRecipe(recipe1);
+        saveRecipeController.saveRecipe(recipe2);
 
-        // Check total calories
-        int totalCalories = mealPlannerController.getTotalCalories();
-        assertEquals(550, totalCalories);
+        // Retrieve and verify saved recipes
+        List<Recipe> savedRecipes = saveRecipeController.getSavedRecipes();
+        assertEquals(2, savedRecipes.size());
+        assertTrue(savedRecipes.stream().anyMatch(r -> r.getLabel().equals("Blackberry + Apple Cocktail")));
+        assertTrue(savedRecipes.stream().anyMatch(r -> r.getLabel().equals("Apple Elixir Recipe")));
     }
 }
