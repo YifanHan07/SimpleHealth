@@ -48,7 +48,7 @@ Interactor: In the file CombineMealsInteractor, calculates the total nutrition f
 
 
 
-### User Story 5: Search Recipes by Health Label   
+### User Story 4: Search Recipes by Health Label   
 
 Description: Enable users to filter recipes by health labels.  
 User Interaction:search for recipes based on specific nutritional criteria (e.g., vegan, wheat-free) to find meals that fit her health goals.  
