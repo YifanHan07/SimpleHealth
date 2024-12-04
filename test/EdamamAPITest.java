@@ -66,7 +66,7 @@ public class EdamamAPITest {
             NutritionInfo nutritionInfo = EdamamAPI.getNutritionInfo(ingredients);
 
             // Assert
-            assertNotNull(nutritionInfo, "NutritionInfo object should not be null");
+            assertNull(nutritionInfo, "NutritionInfo object should not be null");
             assertTrue(nutritionInfo.getCalories() > 0, "Calories should be greater than 0");
             assertTrue(nutritionInfo.getFat() > 0, "Fat should be greater than 0");
             assertTrue(nutritionInfo.getCarbohydrates() > 0, "Carbohydrates should be greater than 0");
@@ -86,7 +86,7 @@ public class EdamamAPITest {
             List<Recipe> recipes = EdamamAPI.searchRecipes(query, 25, healthTag);
 
             // Assert
-            assertNull(recipes, "The recipe list should not be null");
+            assertNotNull(recipes, "The recipe list should not be null");
             assertTrue(recipes.isEmpty(), "The recipe list should be empty for an invalid query");
         } catch (Exception e) {
             fail("Exception thrown during testSearchRecipesInvalidQuery: " + e.getMessage());
