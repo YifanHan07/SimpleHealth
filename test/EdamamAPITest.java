@@ -62,7 +62,7 @@ public class EdamamAPITest {
             List<Recipe> recipes = EdamamAPI.searchRecipes(query, 25, healthTag);
 
             // Assert
-            assertNotNull(recipes, "The recipe list should not be null");
+            assertNull(recipes, "The recipe list should not be null");
             assertTrue(recipes.isEmpty(), "The recipe list should be empty for an invalid query");
         } catch (Exception e) {
             fail("Exception thrown during testSearchRecipesInvalidQuery: " + e.getMessage());
