@@ -35,9 +35,7 @@ public class MyAccountUseCase {
     }
 
     public void updateAllergies(String allergies) {
-        if (!allergies.isEmpty()) {
-            userAccount.setAllergies(allergies);
-        }
+        userAccount.setAllergies(allergies);
         userDataAccessObject.save(userAccount);
     }
 }
