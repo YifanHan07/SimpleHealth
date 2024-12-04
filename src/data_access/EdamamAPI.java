@@ -39,6 +39,7 @@ public class EdamamAPI {
      * @throws Exception If API call fails or response is invalid.
      */
     public static List<Recipe> searchRecipes(String query, int maxResults, StringBuilder tagQuery) throws Exception {
+        validateQuery(query);
         // Construct base API URL
         String apiUrl = String.format(
                 "https://api.edamam.com/api/recipes/v2?type=public&q=%s&app_id=%s&app_key=%s&from=0&to=%d&%s",
@@ -201,6 +202,12 @@ public class EdamamAPI {
             return nutrient.getDouble("quantity");
         }
         return 0.0;
+    }
+
+    private static void validateQuery(String query) throws IllegalArgumentException {
+        if (query == null && query.trim().isEmpty()) {
+            throw new IllegalArgumentException("Query cannot be null or empty.");
+        }
     }
 
     /**
