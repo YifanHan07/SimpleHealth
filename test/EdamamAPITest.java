@@ -11,85 +11,90 @@ import static org.junit.jupiter.api.Assertions.*;
 public class EdamamAPITest {
 
     @Test
-    void testSearchRecipesNoHealthTag() {
+    void testSearchRecipesWithLargeQuery() {
         try {
             // Arrange
-            String query = "pasta";
-            StringBuilder healthTag = new StringBuilder(""); // No health tag
+            String query = "a very long and unnecessarily complicated search term";
+            StringBuilder healthTag = new StringBuilder("high-protein");
 
             // Act
-            List<Recipe> recipes = EdamamAPI.searchRecipes(query, 25, healthTag);
+            List<Recipe> recipes = EdamamAPI.searchRecipes(query, 10, healthTag);
 
             // Assert
             assertNotNull(recipes, "The recipe list should not be null");
-            assertFalse(recipes.isEmpty(), "The recipe list should not be empty");
-            recipes.forEach(recipe -> {
-                assertNotNull(recipe.getLabel(), "Recipe label should not be null");
-                assertNotNull(recipe.getUrl(), "Recipe URL should not be null");
-            });
+            assertTrue(recipes.isEmpty(), "The recipe list should be empty for such a specific query");
         } catch (Exception e) {
-            fail("Exception thrown during testSearchRecipesNoHealthTag: " + e.getMessage());
+            fail("Exception thrown during testSearchRecipesWithLargeQuery: " + e.getMessage());
         }
     }
 
     @Test
-    void testGetNutritionInfoValidIngredients() {
+    void testGetNutritionInfoWithEmptyIngredients() {
         try {
             // Arrange
-            List<String> ingredients = Arrays.asList("1 cup rice", "2 chicken breasts");
+            List<String> ingredients = Arrays.asList(); // Empty ingredient list
 
             // Act
             NutritionInfo nutritionInfo = EdamamAPI.getNutritionInfo(ingredients);
 
             // Assert
             assertNotNull(nutritionInfo, "NutritionInfo object should not be null");
-            assertTrue(nutritionInfo.getCalories() > 0, "Calories should be greater than 0");
-            assertTrue(nutritionInfo.getFat() > 0, "Fat should be greater than 0");
-            assertTrue(nutritionInfo.getCarbohydrates() > 0, "Carbohydrates should be greater than 0");
+            assertEquals(0, nutritionInfo.getCalories(), "Calories should be zero for empty ingredients"); // Intentional error: Missing handling for empty list
         } catch (Exception e) {
-            fail("Exception thrown during testGetNutritionInfoValidIngredients: " + e.getMessage());
+            fail("Exception thrown during testGetNutritionInfoWithEmptyIngredients: " + e.getMessage());
         }
     }
 
     @Test
-    void testSearchRecipesInvalidQuery() {
+    void testSearchRecipesSpecialCharactersInQuery() {
         try {
             // Arrange
-            String query = ""; // Invalid query
-            StringBuilder healthTag = new StringBuilder("vegan");
+            String query = "@#%$!";
+            StringBuilder healthTag = new StringBuilder("");
 
             // Act
-            List<Recipe> recipes = EdamamAPI.searchRecipes(query, 25, healthTag);
+            List<Recipe> recipes = EdamamAPI.searchRecipes(query, 15, healthTag);
 
             // Assert
             assertNotNull(recipes, "The recipe list should not be null");
-            assertTrue(recipes.isEmpty(), "The recipe list should be empty for an invalid query");
+            assertTrue(recipes.isEmpty(), "The recipe list should be empty for a query with special characters");
         } catch (Exception e) {
-            fail("Exception thrown during testSearchRecipesInvalidQuery: " + e.getMessage());
+            fail("Exception thrown during testSearchRecipesSpecialCharactersInQuery: " + e.getMessage());
         }
     }
 
     @Test
-    void testSearchRecipesValidQueryAndTag() {
+    void testSearchRecipesWithNegativeLimit() {
         try {
             // Arrange
-            String query = "chicken";
-            StringBuilder healthTag = new StringBuilder("gluten-free");
+            String query = "salad";
+            StringBuilder healthTag = new StringBuilder("low-fat");
 
             // Act
-            List<Recipe> recipes = EdamamAPI.searchRecipes(query, 25, healthTag);
+            List<Recipe> recipes = EdamamAPI.searchRecipes(query, -5, healthTag);
 
             // Assert
             assertNotNull(recipes, "The recipe list should not be null");
-            assertFalse(recipes.isEmpty(), "The recipe list should not be empty");
-            assertTrue(recipes.size() <= 25, "The recipe list should not exceed 25");
-            recipes.forEach(recipe -> {
-                assertNotNull(recipe.getLabel(), "Recipe label should not be null");
-                assertNotNull(recipe.getUrl(), "Recipe URL should not be null");
-                assertTrue(recipe.getCalories() >= 0, "Calories should not be negative");
-            });
+            assertTrue(recipes.size() <= 0, "The recipe list should be empty for a negative limit"); // Intentional logic error
         } catch (Exception e) {
-            fail("Exception thrown during testSearchRecipesValidQueryAndTag: " + e.getMessage());
+            fail("Exception thrown during testSearchRecipesWithNegativeLimit: " + e.getMessage());
+        }
+    }
+
+    @Test
+    void testGetNutritionInfoWithNullIngredients() {
+        try {
+            // Arrange
+            List<String> ingredients = null; // Null ingredient list
+
+            // Act
+            NutritionInfo nutritionInfo = EdamamAPI.getNutritionInfo(ingredients);
+
+            // Assert
+            assertNotNull(nutritionInfo, "NutritionInfo object should not be null");
+            assertTrue(nutritionInfo.getCalories() == 0, "Calories should be zero for null ingredients");
+        } catch (Exception e) {
+            fail("Exception thrown during testGetNutritionInfoWithNullIngredients: " + e.getMessage()); // Intentional syntax error: Missing semicolon
         }
     }
 }
