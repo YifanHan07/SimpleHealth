@@ -26,9 +26,7 @@ public class MyAccountUseCase {
     }
 
     public void updatePreferences(String preferences) {
-        if (!userAccount.getPreferences().equals(preferences)) {
-            userAccount.setPreferences(preferences);
-        }
+        userAccount.setPreferences(preferences);
         userDataAccessObject.save(userAccount);
     }
 
