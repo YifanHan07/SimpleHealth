@@ -205,7 +205,7 @@ public class EdamamAPI {
     }
 
     private static void validateQuery(String query) throws IllegalArgumentException {
-        if (query == null && query.trim().isEmpty()) {
+        if (query == null || query.trim().isEmpty()) {
             throw new IllegalArgumentException("Query cannot be null or empty.");
         }
     }
