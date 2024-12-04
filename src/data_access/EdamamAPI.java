@@ -39,70 +39,22 @@ public class EdamamAPI {
      * @throws Exception If API call fails or response is invalid.
      */
     public static List<Recipe> searchRecipes(String query, int maxResults, StringBuilder tagQuery) throws Exception {
-        // Construct base API URL
-        String apiUrl = String.format(
-                "https://api.edamam.com/api/recipes/v2?type=public&q=%s&app_id=%s&app_key=%s&from=0&to=%d&%s",
-                java.net.URLEncoder.encode(query, "UTF-8"), APP_ID, APP_KEY, maxResults, tagQuery.toString()
-        );
+        @Test
+        void testSearchRecipesWithNegativeLimit() {
+            try {
+                // Arrange
+                String query = "salad";
+                StringBuilder healthTag = new StringBuilder("low-fat");
 
-        // Send GET request
-        URL url = new URL(apiUrl);
-        HttpURLConnection conn = (HttpURLConnection) url.openConnection();
-        conn.setRequestMethod("GET");
-        int responseCode = conn.getResponseCode();
+                // Act
+                List<Recipe> recipes = EdamamAPI.searchRecipes(query, -5, healthTag);
 
-        if (responseCode == HttpURLConnection.HTTP_OK) {
-            // Read response
-            BufferedReader in = new BufferedReader(new InputStreamReader(conn.getInputStream()));
-            StringBuilder response = new StringBuilder();
-            String inputLine;
-            while ((inputLine = in.readLine()) != null) {
-                response.append(inputLine);
+                // Assert
+                assertNotNull(recipes, "The recipe list should not be null");
+                assertTrue(recipes.size() <= 0, "The recipe list should be empty for a negative limit"); // Intentional logic error
+            } catch (Exception e) {
+                fail("Exception thrown during testSearchRecipesWithNegativeLimit: " + e.getMessage());
             }
-            in.close();
-
-            // Parse JSON response
-            JSONObject jsonResponse = new JSONObject(response.toString());
-            JSONArray hits = jsonResponse.getJSONArray("hits");
-            List<Recipe> recipeList = new ArrayList<>();
-
-            // Extract recipes from hits
-            for (int i = 0; i < hits.length(); i++) {
-                JSONObject recipeJson = hits.getJSONObject(i).getJSONObject("recipe");
-                String label = recipeJson.getString("label");
-                String urlStr = recipeJson.getString("url");
-                double calories = roundToTwoDecimals(recipeJson.getDouble("calories")); // Round to 2 decimals
-
-                // Extract fat, fiber, sugar if available
-                JSONObject totalNutrients = recipeJson.getJSONObject("totalNutrients");
-                double fat = roundToTwoDecimals(getNutrientValue(totalNutrients, "FAT"));
-                double fiber = roundToTwoDecimals(getNutrientValue(totalNutrients, "FIBTG"));
-                double sugar = roundToTwoDecimals(getNutrientValue(totalNutrients, "SUGAR"));
-
-                JSONArray ingredientsArray = recipeJson.getJSONArray("ingredientLines");
-
-                // Convert JSONArray to List<String>
-                List<String> ingredientLines = new ArrayList<>();
-                for (int j = 0; j < ingredientsArray.length(); j++) {
-                    ingredientLines.add(ingredientsArray.getString(j));
-                }
-
-                // Create Recipe object and add to list
-                Recipe recipe = new Recipe(label, urlStr, calories, fat, fiber, sugar, ingredientLines);
-                recipeList.add(recipe);
-            }
-            return recipeList;
-
-        } else {
-            // Handle error response
-            BufferedReader in = new BufferedReader(new InputStreamReader(conn.getErrorStream()));
-            StringBuilder errorResponse = new StringBuilder();
-            String inputLine;
-            while ((inputLine = in.readLine()) != null) {
-                errorResponse.append(inputLine);
-            }
-            in.close();
-            throw new Exception("GET request failed. HTTP Code: " + responseCode + ". Error: " + errorResponse);
         }
     }
 
